@@ -39,3 +39,20 @@
       scrollbar-width: none;  /* Firefox */
   }
 }
+
+/* Story animation */
+#svelte,
+.transition {
+  display: grid;
+  grid-template-rows: 1fr;
+  grid-template-columns: 1fr;
+  height: 100%;
+}
+
+#svelte > *,
+.transition > * {
+  grid-row: 1;
+  grid-column: 1;
+  min-width: 0;
+  min-height: 0;
+}

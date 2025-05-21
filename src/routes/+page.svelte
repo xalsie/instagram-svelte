@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import Navbar from '$lib/components/Navbar.svelte';
 	import Feed from '$lib/components/Feed.svelte';
-	import Stories from '$lib/components/Stories.svelte';
+	import Stories from '$lib/components/Stories.tst.svelte';
 
 	onMount(() => {
 	});
