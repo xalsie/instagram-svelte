@@ -1,86 +1,67 @@
 <script>
-	export let scrollElRef = null;
+	// import { onMount } from 'svelte';
+	import StoryButton from "$lib/components/StoryButton.svelte";
+
+	export let data;
 </script>
 
-<div class="stories">
-	<div class="scroll-container hide-scrollbar h-full" bind:this={scrollElRef}>
-		<div class="scroll-inner">
-			<ul class="list">
-				<slot />
+<div class="relative mb-4 flex w-full md:max-w-8/10 justify-self-center overflow-hidden">
+	<div
+		class="relative flex flex-1 flex-nowrap space-x-4 overflow-hidden rounded-xl pt-2 pb-2 lg:p-4 ml-4 mr-4"
+	>
+		<div class="flex flex-nowrap gap-6 overflow-x-scroll scrollbar-none pl-1 pr-5 no-scrollbar">
+			<ul class="flex gap-6 list-none overflow-x-auto scroll-container">
+				{#each data.images as img}
+					<li>
+						<StoryButton
+							path={`/images/${data.images.indexOf(img) + 1}`}
+							imgSrc={"https://cdn.discordapp.com/avatars/306487572740177920/ce3920162ef416ae4e22764b1f737e8c.webp?size=160"}
+						>
+							{img}
+						</StoryButton>
+					</li>
+				{/each}
 			</ul>
 		</div>
 	</div>
+	<div
+		class="absolute top-1/2 transform -translate-y-1/2 cursor-pointer rounded-full bg-white p-1.5 shadow-xl"
+	>
+		<svg
+			stroke="currentColor"
+			fill="currentColor"
+			stroke-width="0"
+			viewBox="0 0 512 512"
+			height="1em"
+			width="1em"
+			xmlns="http://www.w3.org/2000/svg"
+			><path
+				fill="none"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				stroke-width="48"
+				d="M328 112L184 256l144 144"
+			></path></svg
+		>
+	</div>
+	<div
+		class="absolute top-1/2 transform -translate-y-1/2 -right-0 cursor-pointer rounded-full bg-white p-1.5 shadow-xl"
+	>
+		<svg
+			stroke="currentColor"
+			fill="currentColor"
+			stroke-width="0"
+			viewBox="0 0 512 512"
+			height="1em"
+			width="1em"
+			xmlns="http://www.w3.org/2000/svg"
+			><path
+				fill="none"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				stroke-width="48"
+				d="M184 112l144 144-144 144"
+			></path></svg
+		>
+	</div>
 </div>
-
-<style>
-	.stories {
-	  position: relative;
-	  z-index: 0;
-	  max-width: 100%;
-	}
-
-	.stories:before {
-	  display: block;
-	  content: "";
-	  position: absolute;
-	  z-index: 1;
-	  pointer-events: none;
-	  top: 0;
-	  left: -1px; /* Safari glitch */
-	  right: -1px;
-	  height: 100%;
-	  background: linear-gradient(90deg, #000000 0%, rgba(0, 0, 0, 0)),
-	    linear-gradient(-90deg, #000000 0%, rgba(0, 0, 0, 0));
-	  background-repeat: no-repeat;
-	  background-position: left, right;
-	  background-size: 7% 100%, 10% 100%;
-	}
-
-	.scroll-container {
-	  display: inline-flex;
-	  justify-content: center;
-	  overflow: auto hidden;
-	  --grid-gap: 1rem;
-	}
-	@media (min-width: 768px) {
-	  .scroll-container {
-	    --grid-gap: 2.5rem;
-	  }
-	}
-
-	.scroll-inner {
-	  padding: 0 1rem;
-	  max-width: 100%;
-	}
-	@media (min-width: 768px) {
-	  .scroll-inner {
-	    padding: 0 4rem;
-	  }
-	}
-
-	.list {
-	  display: grid;
-	  grid-gap: var(--grid-gap);
-	  padding: 0;
-	  margin: 0;
-	  list-style: none;
-	  grid-auto-flow: column;
-	  grid-auto-columns: min-content;
-	  max-width: 100%;
-	}
-	@media (min-width: 768px) {
-	  .list {
-	    margin-left: -5px;
-	  }
-	}
-
-	.list:after {
-	  content: "";
-	  width: 1px;
-	}
-	@media (min-width: 768px) {
-	  .list:after {
-	    width: 60px;
-	  }
-	}
-</style>

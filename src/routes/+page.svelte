@@ -2,14 +2,16 @@
 	import { onMount } from 'svelte';
 	import Navbar from '$lib/components/Navbar.svelte';
 	import Feed from '$lib/components/Feed.svelte';
-	import Stories from '$lib/components/Stories.tst.svelte';
+	import Stories from '$lib/components/Stories.svelte';
+
+	export let data;
 
 	onMount(() => {
 	});
 </script>
 
 <div id="root">
-	<div class="min-h-screen bg-neutral-100 w-fit">
+	<div class="min-h-screen bg-neutral-100 w-full">
 		<div>
 			<Navbar />
 
@@ -18,7 +20,24 @@
 					<!-- Left Side -->
 					<div class="col-span-12">
 						<!-- Stories -->
-						<Stories />
+						<Stories bind:data={data} />
+
+						<!-- <div class="">
+							<div class="flex items-center justify-center mb-6 z-20">
+								<Stories bind:scrollElRef={storiesEl}>
+									{#each data.images as img}
+										<li>
+											<StoryButton
+												path={`/images/${data.images.indexOf(img) + 1}`}
+												imgSrc={`/img/${img}`}
+											>
+												{img}
+											</StoryButton>
+										</li>
+									{/each}
+								</Stories>
+							</div>
+						</div> -->
 
 						<!-- Feed -->
 						<Feed />
@@ -28,3 +47,23 @@
 		</div>
 	</div>
 </div>
+
+<style>
+	:global(.transition) {
+		transform-origin: var(--transition-origin-x) var(--transition-origin-y);
+		z-index: 1;
+	}
+
+	main {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+	}
+
+	.stories-container {
+		display: flex;
+		height: 100%;
+		align-items: center;
+		justify-content: center;
+	}
+</style>

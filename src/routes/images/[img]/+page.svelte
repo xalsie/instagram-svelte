@@ -1,19 +1,16 @@
 <script>
-	import { goto } from '$app/navigation';
-	import { page, navigating } from '$app/stores';
-	import { fly, scale } from 'svelte/transition';
-	import { spring } from 'svelte/motion';
-
-	import { storiesPos, storiesScrollWidth } from '$lib/store';
+	import { goto } from "$app/navigation";
+	import { page, navigating } from "$app/stores";
+	import { spring } from "svelte/motion";
 
 	export let data;
 
-	$: imgIndex = isNaN($page.params.img) ? imgIndex : parseInt($page.params.img) - 1;
+	$: imgIndex = isNaN($page.params.img)
+		? imgIndex
+		: parseInt($page.params.img) - 1;
 	$: imgPath = `/img/${imgIndex}.jpg`;
-	$: config;
 
 	let lastTime;
-	let width = typeof window !== 'undefined' ? document.documentElement.clientWidth : 0;
 
 	let yDragStartPos = 0;
 	let xDragStartPos = 0;
@@ -27,12 +24,17 @@
 	let panTween = spring(0);
 
 	function gotoNextStory() {
-		if (imgIndex <= data.imgs.length - 1) {
+		if (imgIndex < data.imgs.length - 1) {
 			goto(`/images/${imgIndex + 2}`, {
 				replaceState: true
+			}).then(() => {
+				setTimeout(() => {
+					stopAutoPlay();
+					if (autoPlay) startAutoPlay();
+				}, 0);
 			});
 		} else {
-			goto('/');
+			goto("/");
 		}
 	}
 
@@ -40,15 +42,19 @@
 		if (imgIndex > 0) {
 			goto(`/images/${imgIndex}`, {
 				replaceState: true
+			}).then(() => {
+				setTimeout(() => {
+					stopAutoPlay();
+					if (autoPlay) startAutoPlay();
+				}, 0);
 			});
 		} else {
-			goto('/');
+			goto("/");
 		}
 	}
 
-	const onStoryPointerUp = (pointerEvent) => {
-		// If we clicked a link, do not do anything
-		if (pointerEvent.target.tagName === 'A') return;
+	const onStoryPointerUp = pointerEvent => {
+		if (pointerEvent.target.tagName === "A") return;
 
 		const isClick = window.performance.now() - lastTime < 300;
 
@@ -61,7 +67,7 @@
 		}
 	};
 
-	const handleStoryMouseUp = (e) => {
+	const handleStoryMouseUp = e => {
 		onStoryPointerUp(e);
 	};
 
@@ -69,24 +75,24 @@
 		lastTime = window.performance.now();
 	};
 
-	const handleKeyUp = (e) => {
-		if (e.key === 'ArrowRight') {
+	const handleKeyUp = e => {
+		if (e.key === "ArrowRight") {
 			gotoNextStory();
-		} else if (e.key === 'ArrowLeft') {
+		} else if (e.key === "ArrowLeft") {
 			gotoPreviousStory();
-		} else if (e.key === 'Escape') {
-			goto('/');
+		} else if (e.key === "Escape") {
+			goto("/");
 		}
 	};
 
-	const handleStoryDragStart = (e) => {
+	const handleStoryDragStart = e => {
 		yDragStartPos = e.changedTouches[0].pageY;
 		xDragStartPos = e.changedTouches[0].pageX;
 
 		lastTime = window.performance.now();
 	};
 
-	const handleStoryDrag = (e) => {
+	const handleStoryDrag = e => {
 		yDragPos = e.changedTouches[0].pageY - yDragStartPos;
 		xDragPos = e.changedTouches[0].pageX - xDragStartPos;
 
@@ -99,7 +105,7 @@
 		}
 	};
 
-	const handleStoryDragEnd = (e) => {
+	const handleStoryDragEnd = e => {
 		e.preventDefault();
 
 		if ($scaleTween === initialScale && !$panTween) {
@@ -107,140 +113,119 @@
 		}
 
 		if ($panTween >= 100) {
-			gotoPreviousProject();
+			gotoPreviousStory();
 		} else if ($panTween <= -100) {
-			gotoNextProject();
+			gotoNextStory();
 		} else if ($scaleTween <= 0.8) {
-			goto('/');
+			goto("/");
 		}
 
 		$scaleTween = initialScale;
 		$panTween = 0;
 	};
 
-	const customFly = (node, options) => {
-		panTween.set(0, { hard: true });
-		return fly(node, options);
-	};
+	export let autoPlay = false;
+	export let autoPlayDelay = 4000;
 
-	const customScale = (node, options) => {
-		const imgIndex = parseInt($page.params.img);
-		const thumbnailWidth = $storiesScrollWidth / (data.imgs.length + 1);
-		const thumbnailCenterPos = thumbnailWidth * imgIndex - thumbnailWidth / 2;
+	let autoPlayTimeout;
+	let progress = 0;
+	let progressInterval;
 
-		node.style.setProperty(
-			'transform-origin',
-			`${$storiesPos.x + thumbnailCenterPos}px ${$storiesPos.y + 30}px`
-		);
-		node.style.setProperty('z-index', 1);
+	function startAutoPlay() {
+		if (autoPlay) {
+			progress = 0;
+			clearTimeout(autoPlayTimeout);
+			clearInterval(progressInterval);
+			const step = 100 / (autoPlayDelay / 10);
 
-		return scale(node, options);
-	};
+			progressInterval = setInterval(() => {
+				progress += step;
+				if (progress >= 100) progress = 100;
+			}, 10);
 
-	$: configs = [
-		{
-			condition: (c) => c.toAncestor || c.toDescendant,
-			transition: customScale
-		},
-		{
-			condition: (c) => c.toHigherIndex,
-			transition: customFly,
-			inParams: { x: width, duration: 400, opacity: 1 },
-			outParams: { x: -width, duration: 400, opacity: 1 }
-		},
-		{
-			condition: (c) => c.toLowerIndex,
-			transition: customFly,
-			inParams: { x: -width, duration: 400, opacity: 1 },
-			outParams: { x: width, duration: 400, opacity: 1 }
+			autoPlayTimeout = setTimeout(() => {
+				stopAutoPlay();
+				gotoNextStory();
+			}, autoPlayDelay + 150);
 		}
-	];
+	}
 
-	$: config = configs.find(({ condition }) => {
-		if (!$navigating) return false;
+	function stopAutoPlay() {
+		clearTimeout(autoPlayTimeout);
+		clearInterval(progressInterval);
+		progress = 0;
+	}
 
-		const { from, to } = $navigating;
+	$: if (autoPlay) {
+		startAutoPlay();
+	}
 
-		if (!from || !to) return false;
-
-		const fromIndex = parseInt(from.params.img);
-		const toIndex = parseInt(to.params.img);
-
-		if (!fromIndex || !toIndex) {
-			return condition({
-				toDescendant: to.url.pathname.split('/').length > from.url.pathname.split('/').length,
-				toAncestor: to.url.pathname.split('/').length < from.url.pathname.split('/').length
-			});
-		}
-
-		return condition({
-			toHigherIndex: fromIndex < toIndex,
-			toLowerIndex: fromIndex > toIndex
-		});
-	}) || {
-		transition: () => {},
-		inParams: {},
-		outParams: {}
-	};
-
-	$: ({ transition, inParams, outParams } = config);
+	import { onDestroy } from 'svelte';
+	onDestroy(() => stopAutoPlay());
 </script>
 
 <svelte:window on:keyup={handleKeyUp} />
 
 {#key imgIndex}
-	<main
-		in:transition={inParams}
-		out:transition={outParams}
+	<div
+		class="relative flex flex-col items-center justify-center min-h-screen w-full bg-white overflow-hidden"
 		on:mousedown={handleStoryMouseDown}
 		on:mouseup={handleStoryMouseUp}
 		on:touchstart|passive={handleStoryDragStart}
 		on:touchmove|passive={handleStoryDrag}
 		on:touchend={handleStoryDragEnd}
+		aria-label="Image story"
+		aria-hidden="true"
 		style="transform: translateX({$panTween}px); opacity: {$scaleTween};"
 	>
-		<div class="inner" style="transform: scale({$scaleTween})">
-			<a class="story-close-btn" aria-label="Close story" href="/">✕</a>
-			<img src={imgPath} />
+		<div class="absolute top-4 right-4 z-20">
+			<a class="text-gray-900 font-bold p-4" aria-label="Close story" href="/">
+				✕
+			</a>
 		</div>
-	</main>
+
+		<div class="flex items-center justify-center gap-2 mt-4 mb-6 z-20">
+			{#each data.imgs as img, i}
+			<button type="button" class="hidden md:block" on:click={() => goto(`/images/${i+1}`)}>
+				<img
+					src={`/img/${i}.jpg`}
+					alt=""
+					class="w-14 h-14 object-cover rounded-full border-2 border-white shadow-md cursor-pointer transition-all duration-200 hover:scale-105 {i === imgIndex ? 'ring-2 ring-blue-500 scale-110' : 'opacity-60'}"
+					style="filter: {i === imgIndex ? 'none' : 'blur(2px)'};"
+				/>
+			</button>
+			{/each}
+		</div>
+
+		<div class="relative flex items-center justify-center w-full h-[60vh] md:h-[70vh] lg:h-[80vh]">
+			<div class="absolute top-5 left-1/2 z-20" style="transform: translateX(-50%); width: calc(100% - 4rem); max-width: 800px;">
+				<div class="h-2 bg-black/20 w-full rounded-2xl">
+					<div class="h-full bg-white rounded-2xl transition-all duration-100 ease-out" style="width: {progress}%;"></div>
+				</div>
+			</div>
+			{#if imgIndex > 0}
+				<img
+					src={`/img/${imgIndex-1}.jpg`}
+					alt=""
+					class="absolute -left-100 top-1/2 -translate-y-1/2 w-1/2 h-5/6 object-contain opacity-60 blur-sm scale-65 transition-all duration-500 z-0"
+				/>
+			{/if}
+			<img
+				src={imgPath}
+				alt=""
+				class="relative z-10 mx-auto w-auto h-full max-h-[80vh] object-contain rounded-xl shadow-2xl transition-transform duration-500 scale-100"
+				style="transform: scale({$scaleTween}); max-width: 900px;"
+			/>
+			{#if imgIndex < data.imgs.length - 1}
+				<img
+					src={`/img/${imgIndex+1}.jpg`}
+					alt=""
+					class="absolute -right-100 top-1/2 -translate-y-1/2 w-1/2 h-5/6 object-contain opacity-60 blur-sm scale-65 transition-all duration-500 z-0"
+				/>
+			{/if}
+		</div>
+	</div>
 {/key}
 
 <style>
-	main {
-		width: 100%;
-		height: 100%;
-	}
-
-	.inner {
-		width: 100%;
-		height: 100%;
-		transform-origin: bottom;
-		background-color: var(--color-bg);
-		align-items: flex-start;
-	}
-
-	.story-close-btn {
-		position: absolute;
-		right: var(--site-padding);
-		display: none;
-		text-decoration: none;
-		color: white;
-		font-size: 1.4rem;
-
-		&:hover {
-			color: var(--color-red);
-		}
-
-		@media (min-width: 768px) {
-			display: block;
-		}
-	}
-
-	img {
-		width: 100%;
-		height: 100%;
-		max-height: 900px;
-		object-fit: contain;
-	}
 </style>
