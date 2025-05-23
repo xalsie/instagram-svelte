@@ -19,7 +19,7 @@
 <div class="cursor-pointer">
 	<a data-sveltekit-prefetch href={path} on:click>
 		<div
-			class="flex h-16 w-16 items-center justify-center rounded-full bg-neutral-200 bg-gradient-to-t from-[#f09433] via-[#dc2743] to-[#bc1888]"
+			class="flex h-16 w-16 items-center justify-self-center justify-center rounded-full bg-neutral-200 bg-gradient-to-t from-[#f09433] via-[#dc2743] to-[#bc1888]"
 		>
 			<img
 				src={imgSrc}

@@ -1,13 +1,39 @@
 <script>
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
+	import { goto } from '$app/navigation';
+
 	import Navbar from '$lib/components/Navbar.svelte';
 	import Feed from '$lib/components/Feed.svelte';
 	import Stories from '$lib/components/Stories.svelte';
+	import { users } from "./mockData.js";
 
 	export let data;
 
+	let feed = [];
+	let loadingFeed = true;
+	let feedTimeout;
+
+	async function fetchFeed() {
+		loadingFeed = true;
+		// Simule un appel serveur avec un délai
+		feedTimeout = setTimeout(() => {
+			feed = [];
+			loadingFeed = false;
+		}, 1200);
+	}
+
 	onMount(() => {
+		data = users;
+		fetchFeed();
 	});
+
+	onDestroy(() => {
+		clearTimeout(feedTimeout);
+	});
+
+	function openStory(user, imgIdx = 1) {
+		goto(`/images/${user.username}/${imgIdx}`);
+	}
 </script>
 
 <div id="root">
@@ -20,27 +46,10 @@
 					<!-- Left Side -->
 					<div class="col-span-12">
 						<!-- Stories -->
-						<Stories bind:data={data} />
-
-						<!-- <div class="">
-							<div class="flex items-center justify-center mb-6 z-20">
-								<Stories bind:scrollElRef={storiesEl}>
-									{#each data.images as img}
-										<li>
-											<StoryButton
-												path={`/images/${data.images.indexOf(img) + 1}`}
-												imgSrc={`/img/${img}`}
-											>
-												{img}
-											</StoryButton>
-										</li>
-									{/each}
-								</Stories>
-							</div>
-						</div> -->
+						<Stories bind:data={data} on:openStory={({ detail }) => openStory(detail.user, detail.imgIdx)} />
 
 						<!-- Feed -->
-						<Feed />
+						<Feed {loadingFeed} />
 					</div>
 				</div>
 			</main>
@@ -58,12 +67,5 @@
 		display: flex;
 		flex-direction: column;
 		height: 100%;
-	}
-
-	.stories-container {
-		display: flex;
-		height: 100%;
-		align-items: center;
-		justify-content: center;
 	}
 </style>

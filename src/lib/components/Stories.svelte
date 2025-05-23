@@ -1,8 +1,13 @@
 <script>
 	// import { onMount } from 'svelte';
 	import StoryButton from "$lib/components/StoryButton.svelte";
-
 	export let data;
+	import { createEventDispatcher } from 'svelte';
+	const dispatch = createEventDispatcher();
+
+	function handleOpenStory(user, imgIdx = 1) {
+		dispatch('openStory', { user, imgIdx });
+	}
 </script>
 
 <div class="relative mb-4 flex w-full md:max-w-8/10 justify-self-center overflow-hidden">
@@ -11,14 +16,23 @@
 	>
 		<div class="flex flex-nowrap gap-6 overflow-x-scroll scrollbar-none pl-1 pr-5 no-scrollbar">
 			<ul class="flex gap-6 list-none overflow-x-auto scroll-container">
-				{#each data.images as img}
-					<li>
+				{#each data as user}
+					<li class="flex flex-col items-center">
 						<StoryButton
-							path={`/images/${data.images.indexOf(img) + 1}`}
-							imgSrc={"https://cdn.discordapp.com/avatars/306487572740177920/ce3920162ef416ae4e22764b1f737e8c.webp?size=160"}
+							path={null}
+							imgSrc={user.profileSrc}
+							on:click={() => handleOpenStory(user, 1)}
 						>
-							{img}
+							{user.displayname}
 						</StoryButton>
+						<!-- Miniatures des images de l'utilisateur -->
+						<!-- <div class="flex gap-1 mt-1">
+							{#each user.images as img, i}
+								<button type="button" on:click={() => handleOpenStory(user, i+1)}>
+									<img src={img.src} alt={img.alt} class="w-6 h-6 rounded object-cover border border-white" />
+								</button>
+							{/each}
+						</div> -->
 					</li>
 				{/each}
 			</ul>
