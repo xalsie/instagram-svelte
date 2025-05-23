@@ -1,14 +1,42 @@
 <script>
 	import { onMount } from 'svelte';
 	import Notification from '$lib/components/Notification.svelte';
+	export let isAuthenticated = false;
 
 	let notificationMessage = '';
+	let showDropdown = false;
+
+	function handleAvatarClick() {
+		showDropdown = !showDropdown;
+	}
+
+	function handleLogout() {
+		localStorage.removeItem('token');
+		window.location.href = '/login';
+	}
+
+	function goToProfile() {
+		window.location.href = '/profile';
+	}
+
+	function goToNotification() {
+		window.location.href = '/notification';
+	}
+
+	function handleClickOutside(event) {
+		if (!event.target.closest('.avatar-dropdown')) {
+			showDropdown = false;
+		}
+	}
 
 	onMount(() => {
 		setTimeout(() => {
 			notificationMessage = 'Nouveau Poste';
 			console.log('Notification: ', notificationMessage);
 		}, 5000);
+		if (typeof window !== 'undefined') {
+			window.addEventListener('click', handleClickOutside);
+		}
 	});
 </script>
 
@@ -137,17 +165,57 @@
 					d="M352.92 80C288 80 256 144 256 144s-32-64-96.92-64c-52.76 0-94.54 44.14-95.08 96.81-1.1 109.33 86.73 187.08 183 252.42a16 16 0 0018 0c96.26-65.34 184.09-143.09 183-252.42-.54-52.67-42.32-96.81-95.08-96.81z"
 				></path></svg
 			>
-			<div class="relative">
-				<div class="flex h-7 w-7 items-center justify-center rounded-full">
-					<img
-						src="https://cdn.discordapp.com/avatars/306487572740177920/ce3920162ef416ae4e22764b1f737e8c.webp?size=160"
-						alt="jatinbumbraavatar"
-						class="h-6 w-6 cursor-pointer rounded-full outline outline-white"
-					/>
+			{#if isAuthenticated}
+				<div class="relative avatar-dropdown">
+					<div class="flex h-7 w-7 items-center justify-center rounded-full">
+						<img
+							src="https://cdn.discordapp.com/avatars/306487572740177920/ce3920162ef416ae4e22764b1f737e8c.webp?size=160"
+							alt="jatinbumbraavatar"
+							class="h-6 w-6 cursor-pointer rounded-full outline outline-white"
+							on:click={handleAvatarClick}
+						/>
+					</div>
+					{#if showDropdown}
+						<!-- ajoute une transition de haute en bas en css -->
+						<div class="absolute right-0 mt-2 w-40 bg-white border rounded shadow-lg z-50 dropdown-anim" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+							<div class="py-1" role="none">
+								<a href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-0">Account settings</a>
+								<a href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-1">Support</a>
+								<a href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-2">License</a>
+								<form method="POST" action="#" role="none">
+									<button type="submit" class="block w-full px-4 py-2 text-left text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-3">Sign out</button>
+								</form>
+							</div>
+						</div>
+					{/if}
 				</div>
-			</div>
+			{:else}
+				<a
+					href="/login"
+					class="rounded-md bg-neutral-200 px-3 py-1.5 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
+				>
+					Se connecter
+				</a>
+			{/if}
 		</div>
 
-        <Notification message={notificationMessage} />
+		<Notification message={notificationMessage} />
 	</div>
 </header>
+
+<style>
+.dropdown-anim {
+    animation: dropdown-fade-in 0.25s cubic-bezier(0.4,0,0.2,1);
+    transform-origin: top;
+}
+@keyframes dropdown-fade-in {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px) scaleY(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scaleY(1);
+    }
+}
+</style>

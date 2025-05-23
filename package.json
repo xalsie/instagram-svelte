@@ -62,5 +62,12 @@
 	},
 	"keywords": [
 		"svelte"
-	]
+	],
+	"dependencies": {
+		"bcryptjs": "^3.0.2",
+		"dotenv": "^16.5.0",
+		"install": "^0.13.0",
+		"jsonwebtoken": "^9.0.2",
+		"mongoose": "^8.15.0"
+	}
 }
