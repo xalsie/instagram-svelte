@@ -2,9 +2,10 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
 
-	import Navbar from '$lib/components/Navbar.svelte';
-	import Feed from '$lib/components/Feed.svelte';
-	import Stories from '$lib/components/Stories.svelte';
+import Navbar from '$lib/components/Navbar.svelte';
+import Feed from '$lib/components/Feed.svelte';
+import Stories from '$lib/components/Stories.svelte';
+let isAuthenticated = false;
 	import { users } from "./mockData.js";
 
 	export let data;
@@ -22,10 +23,13 @@
 		}, 1200);
 	}
 
-	onMount(() => {
-		data = users;
-		fetchFeed();
-	});
+onMount(() => {
+	data = users;
+	fetchFeed();
+	if (typeof window !== 'undefined') {
+		isAuthenticated = !!localStorage.getItem('token');
+	}
+});
 
 	onDestroy(() => {
 		clearTimeout(feedTimeout);
@@ -39,14 +43,16 @@
 <div id="root">
 	<div class="min-h-screen bg-neutral-100 w-full">
 		<div>
-			<Navbar />
+			<Navbar {isAuthenticated} />
 
 			<main class="mx-auto px-2 py-2 md:px-4 md:py-6 w-full md:max-w-9/10 xl:max-w-3/4">
 				<div class="grid grid-cols-12">
 					<!-- Left Side -->
 					<div class="col-span-12">
-						<!-- Stories -->
+					<!-- Stories -->
+					{#if isAuthenticated}
 						<Stories bind:data={data} on:openStory={({ detail }) => openStory(detail.user, detail.imgIdx)} />
+					{/if}
 
 						<!-- Feed -->
 						<Feed {loadingFeed} />

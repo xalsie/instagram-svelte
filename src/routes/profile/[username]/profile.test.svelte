@@ -19,7 +19,7 @@
 
           <!-- badge -->
           <span class="inline-block fas fa-certificate fa-lg text-blue-500 
-                               relative mr-6  text-xl transform -translate-y-2" aria-hidden="true">
+                               relative mr-6  text-xl transform -translate-y-2" inert>
             <i class="fas fa-check text-white text-xs absolute inset-x-0
                                ml-1 mt-px"></i>
           </span>

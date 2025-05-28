@@ -1,53 +1,39 @@
 <script>
-	let email = '';
+	let username = '';
 	let password = '';
 	let errorMessage = '';
 
 	const handleLogin = async () => {
-		try {
-			// Add your login logic here, e.g., API call to authenticate user
-			// If successful, redirect to the home page or user profile
-		} catch (error) {
-			errorMessage = 'Login failed. Please check your credentials.';
+		errorMessage = '';
+		const res = await fetch('/api/login', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ username, password })
+		});
+		const data = await res.json();
+		if (!res.ok) {
+			errorMessage = data.error || 'Login failed. Please check your credentials.';
+		} else {
+			localStorage.setItem('token', data.token);
+			window.location.href = '/';
 		}
 	};
 </script>
 
-<style>
-	.login-container {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		height: 100vh;
-	}
+<div class="flex min-h-screen flex-col items-center justify-center">
+		<div class="w-full max-w-sm rounded bg-white p-8 shadow-md">
+		<h2 class="mb-4 text-2xl font-bold">Login</h2>
+		{#if errorMessage}
+			<p class="error">{errorMessage}</p>
+		{/if}
 
-	.input {
-		margin: 10px 0;
-		padding: 10px;
-		width: 300px;
-	}
+		<input type="text" bind:value={username} class="mb-2 w-full rounded border p-2" placeholder="Nom d'utilisateur" required />
+		<input type="password" bind:value={password} class="mb-2 w-full rounded border p-2" placeholder="Password" required />
 
-	.button {
-		padding: 10px;
-		width: 320px;
-		background-color: #0095f6;
-		color: white;
-		border: none;
-		cursor: pointer;
-	}
+		<button type="button" on:click={handleLogin} class="w-full rounded bg-blue-500 p-2 text-white hover:bg-blue-600">Se connecter</button>
 
-	.error {
-		color: red;
-	}
-</style>
-
-<div class="login-container">
-	<h1>Login</h1>
-	{#if errorMessage}
-		<p class="error">{errorMessage}</p>
-	{/if}
-	<input type="email" bind:value={email} class="input" placeholder="Email" />
-	<input type="password" bind:value={password} class="input" placeholder="Password" />
-	<button on:click={handleLogin} class="button">Log In</button>
+		<div class="mt-2 text-sm">
+			Vous n'avez pas de compte ? <a href="/register" class="text-blue-600 underline">S'inscrire</a>
+		</div>
+	</div>
 </div>

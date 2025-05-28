@@ -48,10 +48,6 @@
   --site-padding: 2rem;
 }
 
-body {
-  background-color: black;
-}
-
 #svelte,
 .transition {
   display: grid;
