@@ -5,7 +5,7 @@
 	export let path;
 	export let imgSrc;
 
-	let isActive = $navigating && $navigating.from.url.pathname === path;
+	let isActive = $navigating && $navigating.from && $navigating.from.url.pathname === path;
 
 	let tween = spring(0.2, {
 		stiffness: 0.1,

@@ -1,25 +1,74 @@
-<div class="rounded-xl bg-white">
-	<div class="w-full rounded-t-xl bg-neutral-200">
-		<img
-			src="https://loremflickr.com/640/480/technics"
-			alt=""
-			class="h-full min-h-[220px] w-full rounded-t-xl object-cover"
-		/>
-	</div>
+<script lang="ts">
+	import { onMount } from 'svelte';
+	export let post = {};
+	export let index = 0;
+
+	let showDropdown = false;
+
+	function handleAvatarClick() {
+		showDropdown = !showDropdown;
+	}
+
+	function handleClickOutside(event: MouseEvent) {
+		const target = event.target;
+		if (!(target instanceof Element) || !target.closest('.avatar-dropdown')) {
+			showDropdown = false;
+		}
+	}
+
+	onMount(() => {
+		console.log('Post data:', post, index);
+
+		if (typeof window !== 'undefined') {
+			window.addEventListener('click', handleClickOutside);
+		}
+	})
+</script>
+
+<div class="rounded-xl bg-white transition-all hover:shadow-md">
+	<a href="{`/post/${post._id}`}" class="cursor-pointer">
+		<div class="w-full rounded-t-xl bg-neutral-200">
+			<img
+				src="{post.images[0].url}"
+				alt=""
+				class="h-full min-h-[220px] max-h-[220px] w-full rounded-t-xl object-cover"
+			/>
+		</div>
+	</a>
 	<div class="p-3">
 		<div class="flex items-center justify-between text-2xl">
 			<div class="flex items-center space-x-4">
 				<div class="flex items-center">
 					<div class="h-10 w-10 rounded-full bg-neutral-200">
 						<img
-							src="https://cdn.discordapp.com/avatars/306487572740177920/ce3920162ef416ae4e22764b1f737e8c.webp?size=160"
+							src="{post.user.profileSrc || '/default-avatar.png'}"
 							alt="kristine_heaneyavatar"
 							class="rounded-full"
 						/>
 					</div>
 					<div class="ml-2.5">
-						<p class="text-sm font-medium">LeGrizzly</p>
-						<p style="font-size: 12px;">Los Santos</p>
+						<p class="text-sm font-medium">{post.user.username || 'Unknown'}</p>
+						<div class="relative group flex">
+							<span class="text-gray-500 cursor-pointer text-sm">
+								{post.createdAt ? new Date(post.createdAt).toLocaleDateString('fr-FR', {
+									day: 'numeric',
+									month: 'long',
+									year: 'numeric'
+								}) : 'Date inconnue'}
+							</span>
+							{#if post.createdAt}
+								<div class="absolute left-1/2 top-full z-10 hidden min-w-max -translate-x-1/2 whitespace-nowrap rounded bg-white p-2 text-xs text-black shadow-md group-hover:block">
+									{new Date(post.createdAt).toLocaleString('fr-FR', {
+										day: 'numeric',
+										month: 'long',
+										year: 'numeric',
+										hour: '2-digit',
+										minute: '2-digit',
+										second: '2-digit'
+									})}
+								</div>
+							{/if}
+						</div>
 					</div>
 				</div>
 			</div>
@@ -51,7 +100,9 @@
 							</svg>
 						</div>
 					</div>
-					<p class="ml-1 text-xs font-semibold">20 000</p>
+					<p class="ml-1 text-xs font-semibold">
+						{post.likes ? post.likes.length : 0}
+					</p>
 				</div>
 
 				<div class="flex items-center">
@@ -64,18 +115,34 @@
 							d="M87.49 380c1.19-4.38-1.44-10.47-3.95-14.86a44.86 44.86 0 00-2.54-3.8 199.81 199.81 0 01-33-110C47.65 139.09 140.73 48 255.83 48 356.21 48 440 117.54 459.58 209.85a199 199 0 014.42 41.64c0 112.41-89.49 204.93-204.59 204.93-18.3 0-43-4.6-56.47-8.37s-26.92-8.77-30.39-10.11a31.09 31.09 0 00-11.12-2.07 30.71 30.71 0 00-12.09 2.43l-67.83 24.48a16 16 0 01-4.67 1.22 9.6 9.6 0 01-9.57-9.74 15.85 15.85 0 01.6-3.29z"
 						></path>
 					</svg>
-					<p class="ml-1 text-xs font-semibold">10</p>
+					<p class="ml-1 text-xs font-semibold">
+						{post.comments ? post.comments.length : 0}
+					</p>
 				</div>
 
-				<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 24 24" class="cursor-pointer transition-all hover:opacity-50 active:scale-75" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-					<path
-						d="M6 12H18M12 6V18"
-						stroke="#000000"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					/>
-				</svg>
+				<div class="relative avatar-dropdown">
+					<button type="button" aria-label="icon-plus" on:click={handleAvatarClick} class="flex items-center justify-center">
+						<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 24 24" class="cursor-pointer transition-all hover:opacity-50 active:scale-75" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+							<path
+								d="M6 12H18M12 6V18"
+								stroke="#000000"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							/>
+						</svg>
+					</button>
+					{#if showDropdown}
+						<div class="absolute right-0 mt-2 w-40 bg-white rounded shadow-lg z-50 dropdown-anim" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+							<div class="py-1" role="none">
+								<button type="button" class="block w-full text-left px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-0">Account settings</button>
+								<button type="button" class="block w-full text-left px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-1">Support</button>
+								<button type="button" class="block w-full text-left px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-2">License</button>
+								<button type="button" class="block w-full px-4 py-2 text-left text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-3">Sign out</button>
+							</div>
+						</div>
+					{/if}
+				</div>
 			</div>
 		</div>
 	</div>
@@ -104,12 +171,6 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
-	}
-
-	.con-like .outline,
-	.con-like .filled {
-		fill: var(--red);
-		position: absolute;
 	}
 
 	.con-like .filled {
@@ -165,4 +226,19 @@
 			display: none;
 		}
 	}
+
+.dropdown-anim {
+    animation: dropdown-fade-in 0.25s cubic-bezier(0.4,0,0.2,1);
+    transform-origin: top;
+}
+@keyframes dropdown-fade-in {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px) scaleY(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scaleY(1);
+    }
+}
 </style>

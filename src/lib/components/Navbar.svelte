@@ -1,7 +1,7 @@
-<script>
+<script lang="ts">
 	import { onMount } from 'svelte';
+	import { user, isAuthenticated, token } from '$lib/store.js';
 	import Notification from '$lib/components/Notification.svelte';
-	export let isAuthenticated = false;
 
 	let notificationMessage = '';
 	let showDropdown = false;
@@ -11,7 +11,9 @@
 	}
 
 	function handleLogout() {
-		localStorage.removeItem('token');
+		user.set(null);
+		isAuthenticated.set(false);
+		token.set(null);
 		window.location.href = '/login';
 	}
 
@@ -23,13 +25,16 @@
 		window.location.href = '/notification';
 	}
 
-	function handleClickOutside(event) {
-		if (!event.target.closest('.avatar-dropdown')) {
+	function handleClickOutside(event: MouseEvent) {
+		const target = event.target;
+		if (!(target instanceof Element) || !target.closest('.avatar-dropdown')) {
 			showDropdown = false;
 		}
 	}
 
 	onMount(() => {
+		console.log('Navbar mounted', $isAuthenticated, $user.username);
+
 		setTimeout(() => {
 			notificationMessage = 'Nouveau Poste';
 			console.log('Notification: ', notificationMessage);
@@ -44,7 +49,9 @@
 	<div
 		class="container relative mx-auto flex items-center justify-between p-4 xl:max-w-3/4"
 	>
-		<img src="/Instagram-wordmark.svg" alt="instagram wordmark" class="-mb-2 h-7" />
+		<a href="/" class="flex items-center space-x-2">
+			<img src="/Instagram-wordmark.svg" alt="instagram wordmark" class="-mb-2 h-7" />
+		</a>
 		<div
 			class="absolute left-1/2 flex -translate-x-1/2 items-center space-x-2 rounded-md bg-neutral-200 px-4 py-1.5"
 		>
@@ -165,26 +172,25 @@
 					d="M352.92 80C288 80 256 144 256 144s-32-64-96.92-64c-52.76 0-94.54 44.14-95.08 96.81-1.1 109.33 86.73 187.08 183 252.42a16 16 0 0018 0c96.26-65.34 184.09-143.09 183-252.42-.54-52.67-42.32-96.81-95.08-96.81z"
 				></path></svg
 			>
-			{#if isAuthenticated}
+			{#if $isAuthenticated}
 				<div class="relative avatar-dropdown">
 					<div class="flex h-7 w-7 items-center justify-center rounded-full">
-						<img
-							src="https://cdn.discordapp.com/avatars/306487572740177920/ce3920162ef416ae4e22764b1f737e8c.webp?size=160"
-							alt="jatinbumbraavatar"
-							class="h-6 w-6 cursor-pointer rounded-full outline outline-white"
-							on:click={handleAvatarClick}
-						/>
+						<button type="button" on:click={handleAvatarClick} class="flex items-center justify-center">
+							<!-- src="https://cdn.discordapp.com/avatars/306487572740177920/ce3920162ef416ae4e22764b1f737e8c.webp?size=160" -->
+							<img
+								src={$user?.profileSrc || '/default-avatar.png'}
+								alt="avatar-{$user?.username || 'default'}"
+								class="h-6 w-6 cursor-pointer rounded-full outline outline-white"
+							/>
+						</button>
 					</div>
 					{#if showDropdown}
-						<!-- ajoute une transition de haute en bas en css -->
-						<div class="absolute right-0 mt-2 w-40 bg-white border rounded shadow-lg z-50 dropdown-anim" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+						<div class="absolute right-0 mt-2 w-40 bg-white rounded shadow-lg z-50 dropdown-anim" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
 							<div class="py-1" role="none">
-								<a href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-0">Account settings</a>
-								<a href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-1">Support</a>
-								<a href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-2">License</a>
-								<form method="POST" action="#" role="none">
-									<button type="submit" class="block w-full px-4 py-2 text-left text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-3">Sign out</button>
-								</form>
+								<button type="button" class="block w-full text-left px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-0">Account settings</button>
+								<button type="button" class="block w-full text-left px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-1">Support</button>
+								<button type="button" class="block w-full text-left px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-2">License</button>
+								<button type="button" on:click={handleLogout} class="block w-full px-4 py-2 text-left text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-3">Sign out</button>
 							</div>
 						</div>
 					{/if}
