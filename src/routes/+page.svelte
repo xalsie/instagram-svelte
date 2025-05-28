@@ -1,61 +1,66 @@
-<script>
+<script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
+	import Navbar from '$lib/components/Navbar.svelte';
+	import Feed from '$lib/components/Feed.svelte';
+	import Stories from '$lib/components/Stories.svelte';
 	import { goto } from '$app/navigation';
 
-import Navbar from '$lib/components/Navbar.svelte';
-import Feed from '$lib/components/Feed.svelte';
-import Stories from '$lib/components/Stories.svelte';
-let isAuthenticated = false;
-	import { users } from "./mockData.js";
+	let users: Object[] = [];
+	let loadingUsers = true;
+	let feedTimeout: ReturnType<typeof setTimeout>;
+	let isAuthenticated = true;
 
-	export let data;
+	type User = any;
+	type OpenStoryDetail = { user: User; imgIdx: number };
 
-	let feed = [];
-	let loadingFeed = true;
-	let feedTimeout;
-
-	async function fetchFeed() {
-		loadingFeed = true;
-		// Simule un appel serveur avec un délai
-		feedTimeout = setTimeout(() => {
-			feed = [];
-			loadingFeed = false;
-		}, 1200);
+	async function fetchUsers() {
+		loadingUsers = true;
+		// Récupère les stories depuis l'API
+		const res = await fetch('/api/stories');
+		if (res.ok) {
+			// On adapte le format pour Stories.svelte : chaque story a un user et des images
+			const stories = await res.json();
+			users = stories.map(story => ({
+				...story.user,
+				images: story.images,
+				storyId: story._id,
+				expiresAt: story.expiresAt
+			}));
+		} else {
+			users = [];
+		}
+		loadingUsers = false;
 	}
 
-onMount(() => {
-	data = users;
-	fetchFeed();
-	if (typeof window !== 'undefined') {
-		isAuthenticated = !!localStorage.getItem('token');
-	}
-});
+	onMount(() => {
+		fetchUsers();
+	});
 
 	onDestroy(() => {
 		clearTimeout(feedTimeout);
 	});
 
-	function openStory(user, imgIdx = 1) {
+	function openStory(user: User, imgIdx: number = 1) {
 		goto(`/images/${user.username}/${imgIdx}`);
 	}
 </script>
 
 <div id="root">
-	<div class="min-h-screen bg-neutral-100 w-full">
+	<div class="min-h-screen w-full bg-neutral-100">
 		<div>
 			<Navbar {isAuthenticated} />
 
-			<main class="mx-auto px-2 py-2 md:px-4 md:py-6 w-full md:max-w-9/10 xl:max-w-3/4">
+			<main class="md:max-w-9/10 xl:max-w-3/4 mx-auto w-full px-2 py-2 md:px-4 md:py-6">
 				<div class="grid grid-cols-12">
-					<!-- Left Side -->
 					<div class="col-span-12">
-					<!-- Stories -->
-					{#if isAuthenticated}
-						<Stories bind:data={data} on:openStory={({ detail }) => openStory(detail.user, detail.imgIdx)} />
-					{/if}
+						{#if isAuthenticated}
+							<Stories
+								bind:data={users}
+								on:openStory={({ detail }) => openStory(detail.user, detail.imgIdx)}
+							/>
+						{/if}
 
-						<!-- Feed -->
-						<Feed {loadingFeed} />
+						<Feed />
 					</div>
 				</div>
 			</main>
@@ -68,7 +73,6 @@ onMount(() => {
 		transform-origin: var(--transition-origin-x) var(--transition-origin-y);
 		z-index: 1;
 	}
-
 	main {
 		display: flex;
 		flex-direction: column;

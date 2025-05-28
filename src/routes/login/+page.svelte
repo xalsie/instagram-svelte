@@ -1,4 +1,5 @@
 <script>
+	import { user, token, isAuthenticated } from '$lib/store.js';
 	let username = '';
 	let password = '';
 	let errorMessage = '';
@@ -14,14 +15,21 @@
 		if (!res.ok) {
 			errorMessage = data.error || 'Login failed. Please check your credentials.';
 		} else {
-			localStorage.setItem('token', data.token);
+			// localStorage.setItem('token', data.token);
+			token.set(data.token);
+			isAuthenticated.set(true);
+			// Stocke l'utilisateur dans le store s'il est renvoyé par l'API
+			if (data.user) {
+				console.log('User data received:', data.user);
+				user.set(data.user);
+			}
 			window.location.href = '/';
 		}
 	};
 </script>
 
 <div class="flex min-h-screen flex-col items-center justify-center">
-		<div class="w-full max-w-sm rounded bg-white p-8 shadow-md">
+	<div class="w-full max-w-sm rounded bg-white p-8 shadow-md">
 		<h2 class="mb-4 text-2xl font-bold">Login</h2>
 		{#if errorMessage}
 			<p class="error">{errorMessage}</p>

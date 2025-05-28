@@ -1,11 +1,20 @@
-<script>
-	// import { onMount } from 'svelte';
+<script lang="ts">
 	import StoryButton from "$lib/components/StoryButton.svelte";
-	export let data;
 	import { createEventDispatcher } from 'svelte';
+
+	type User = {
+		username: string;
+		displayname: string;
+		profileSrc: string;
+		images?: { src: string; alt: string }[];
+		storyId?: string;
+		expiresAt?: string;
+	};
+
+	export let data: User[];
 	const dispatch = createEventDispatcher();
 
-	function handleOpenStory(user, imgIdx = 1) {
+	function handleOpenStory(user: User, imgIdx: number = 1) {
 		dispatch('openStory', { user, imgIdx });
 	}
 </script>
