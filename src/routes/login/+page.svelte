@@ -1,10 +1,10 @@
-<script>
+<script lang="ts">
 	import { user, token, isAuthenticated } from '$lib/store.js';
-	let username = '';
-	let password = '';
-	let errorMessage = '';
+	let username: string = '';
+	let password: string = '';
+	let errorMessage: string = '';
 
-	const handleLogin = async () => {
+	const handleLogin = async (): Promise<void> => {
 		errorMessage = '';
 		const res = await fetch('/api/login', {
 			method: 'POST',
@@ -15,12 +15,9 @@
 		if (!res.ok) {
 			errorMessage = data.error || 'Login failed. Please check your credentials.';
 		} else {
-			// localStorage.setItem('token', data.token);
 			token.set(data.token);
 			isAuthenticated.set(true);
-			// Stocke l'utilisateur dans le store s'il est renvoyé par l'API
 			if (data.user) {
-				console.log('User data received:', data.user);
 				user.set(data.user);
 			}
 			window.location.href = '/';

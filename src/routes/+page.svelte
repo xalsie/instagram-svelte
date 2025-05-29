@@ -5,10 +5,14 @@
 	import Stories from '$lib/components/Stories.svelte';
 	import { goto } from '$app/navigation';
 
-	let users: Object[] = [];
+	import { isAuthenticated } from '$lib/store.js';
+
+	import type { IUser } from '$lib/server/models/User';
+	import type { IStory } from '$lib/server/models/Story';
+
+	let users: IUser[] = [];
 	let loadingUsers = true;
-	let feedTimeout: ReturnType<typeof setTimeout>;
-	let isAuthenticated = true;
+	// let feedTimeout: ReturnType<typeof setTimeout>;
 
 	type User = any;
 	type OpenStoryDetail = { user: User; imgIdx: number };
@@ -19,12 +23,12 @@
 		const res = await fetch('/api/stories');
 		if (res.ok) {
 			// On adapte le format pour Stories.svelte : chaque story a un user et des images
-			const stories = await res.json();
-			users = stories.map(story => ({
+			const stories: IStory[] = await res.json();
+			users = stories.map((story) => ({
 				...story.user,
 				images: story.images,
 				storyId: story._id,
-				expiresAt: story.expiresAt
+				delay: story.delay
 			}));
 		} else {
 			users = [];
@@ -36,9 +40,9 @@
 		fetchUsers();
 	});
 
-	onDestroy(() => {
-		clearTimeout(feedTimeout);
-	});
+	// onDestroy(() => {
+	// 	clearTimeout(feedTimeout);
+	// });
 
 	function openStory(user: User, imgIdx: number = 1) {
 		goto(`/images/${user.username}/${imgIdx}`);
@@ -48,12 +52,12 @@
 <div id="root">
 	<div class="min-h-screen w-full bg-neutral-100">
 		<div>
-			<Navbar {isAuthenticated} />
+			<Navbar />
 
 			<main class="md:max-w-9/10 xl:max-w-3/4 mx-auto w-full px-2 py-2 md:px-4 md:py-6">
 				<div class="grid grid-cols-12">
 					<div class="col-span-12">
-						{#if isAuthenticated}
+						{#if $isAuthenticated}
 							<Stories
 								bind:data={users}
 								on:openStory={({ detail }) => openStory(detail.user, detail.imgIdx)}

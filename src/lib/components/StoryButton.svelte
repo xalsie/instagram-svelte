@@ -1,11 +1,11 @@
-<script>
+<script lang="ts">
 	import { navigating } from "$app/stores";
 	import { spring } from "svelte/motion";
 
-	export let path;
-	export let imgSrc;
+	export let path: string;
+	export let imgSrc: string;
 
-	let isActive = $navigating && $navigating.from && $navigating.from.url.pathname === path;
+	let isActive: boolean = $navigating && $navigating.from && $navigating.from.url.pathname === path;
 
 	let tween = spring(0.2, {
 		stiffness: 0.1,

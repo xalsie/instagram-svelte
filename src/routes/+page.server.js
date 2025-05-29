@@ -5,11 +5,11 @@ import { readdir } from "node:fs/promises";
 /** @type {import('./$types').PageLoad} */
 export async function load() {
   try {
-    const dir = await readdir(resolve("./static/img"));
+    const dir = await readdir(resolve("./static/images"));
     return {
       images: dir
     };
-  } catch (e) {
+  } catch {
     throw error(404, "Not found");
   }
 }

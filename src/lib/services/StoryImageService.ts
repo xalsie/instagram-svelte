@@ -1,36 +1,28 @@
-import User from '$lib/server/models/User.js';
-import Story from '$lib/server/models/Story.js';
-import Image from '$lib/server/models/Image.js';
-import { connectDB } from '$lib/server/db.js';
+// Service métier pour la gestion des images de stories
+import User from '../server/models/User';
+import Story from '../server/models/Story';
+import Image from '../server/models/Image';
 
-/** @type {import('./$types').PageServerLoad} */
-export async function load({ params }) {
-  try {
-    await connectDB();
-    const { username, img } = params;
-    // Récupère la story active de l'utilisateur
+export class StoryImageService {
+  static async getUserStoryImages(username: string, img: string) {
     const user = await User.findOne({ username })
       .select('-password -email -createdAt -updatedAt -followers -following -bio -username')
       .lean();
-    console.log('User found:', user);
     if (!user) {
-      return { status: 404, error: 'User not found' };
+      return { error: 'User not found', status: 404 };
     }
-    // Récupère la story non expirée de cet utilisateur
     const now = new Date();
-    // @ts-ignore
     const userId = user && (user._id || user.id);
-    // Récupère toutes les stories de l'utilisateur et regroupe les images
     const userStories = await Story.find({ user: userId })
       .populate({ path: 'images', model: 'Image' })
       .lean();
     const images = userStories.flatMap(story => Array.isArray(story.images) ? story.images : []);
     if (images.length === 0) {
-      return { status: 404, error: 'No active story for this user' };
+      return { error: 'No active story for this user', status: 404 };
     }
     const imgIndex = parseInt(img) - 1;
     if (isNaN(imgIndex) || imgIndex < 0 || imgIndex >= images.length) {
-      return { status: 404, error: 'Image not found' };
+      return { error: 'Image not found', status: 404 };
     }
     // Liste de tous les users avec stories (regroupées)
     const allStories = await Story.find({ updatedAt: { $gte: new Date(now.getTime() - 24 * 60 * 60 * 1000) } })
@@ -38,7 +30,6 @@ export async function load({ params }) {
       .populate({ path: 'user', select: '-password -email -createdAt -updatedAt -followers -following -bio' })
       .populate({ path: 'images', model: 'Image', select: '-createdAt -updatedAt' })
       .lean();
-    // Regroupe les images par utilisateur
     const userMap = new Map();
     for (const story of allStories) {
       const u = story.user;
@@ -58,27 +49,17 @@ export async function load({ params }) {
           _id: img._id?.toString?.() ?? img._id,
           user: img.user?.toString?.() ?? img.user,
           delay: story.delay,
-          // src: img.url
         });
       }
     }
     const users = Array.from(userMap.values());
-    // Utilisateur courant au même format
     const safeUser = {
       ...user, _id: user._id?.toString?.() ?? user._id, images: images.map(img => ({
         ...img,
         _id: img._id?.toString?.() ?? img._id,
         user: img.user?.toString?.() ?? img.user,
-        // src: img.url
       }))
     };
-
-    return {
-      user: safeUser,
-      users,
-      imgIndex
-    };
-  } catch (err) {
-    return { status: 500, error: 'Server error: ' + (err?.message || err) };
+    return { user: safeUser, users, imgIndex };
   }
 }

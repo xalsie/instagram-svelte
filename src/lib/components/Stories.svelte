@@ -2,19 +2,21 @@
 	import StoryButton from "$lib/components/StoryButton.svelte";
 	import { createEventDispatcher } from 'svelte';
 
-	type User = {
-		username: string;
-		displayname: string;
-		profileSrc: string;
-		images?: { src: string; alt: string }[];
-		storyId?: string;
-		expiresAt?: string;
-	};
+	import type { IUser } from '$lib/server/models/User';
 
-	export let data: User[];
+	// type User = {
+	// 	username: string;
+	// 	displayname: string;
+	// 	src: string;
+	// 	images?: { src: string; alt: string }[];
+	// 	storyId?: string;
+	// 	expiresAt?: string;
+	// };
+
+	export let data: IUser[];
 	const dispatch = createEventDispatcher();
 
-	function handleOpenStory(user: User, imgIdx: number = 1) {
+	function handleOpenStory(user: IUser, imgIdx: number = 1) {
 		dispatch('openStory', { user, imgIdx });
 	}
 </script>
@@ -29,7 +31,7 @@
 					<li class="flex flex-col items-center">
 						<StoryButton
 							path={null}
-							imgSrc={user.profileSrc}
+							imgSrc={user.src}
 							on:click={() => handleOpenStory(user, 1)}
 						>
 							{user.displayname}

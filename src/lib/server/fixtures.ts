@@ -31,7 +31,7 @@ async function seed() {
         email: 'alice@email.com',
         password: 'hashedpassword1',
         displayname: 'Alice',
-        profileSrc: '/images/profile1.jpg',
+        src: '/images/profiles/profile1.jpg',
         bio: 'Bio Alice'
     });
     const bob = await User.create({
@@ -39,7 +39,7 @@ async function seed() {
         email: 'bob@email.com',
         password: 'hashedpassword2',
         displayname: 'Bob',
-        profileSrc: '/images/profile2.jpg',
+        src: '/images/profiles/profile2.jpg',
         bio: 'Bio Bob'
     });
 

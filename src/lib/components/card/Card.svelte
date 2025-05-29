@@ -1,7 +1,28 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	export let post = {};
-	export let index = 0;
+	import { onMount, onDestroy } from 'svelte';
+
+	// import 
+
+	// interface IUserCard {
+	// 	username: string;
+	// 	displayname?: string;
+	// 	src?: string;
+	// }
+	// interface IImageCard {
+	// 	url: string;
+	// }
+	// interface IPostCard {
+	// 	_id: string;
+	// 	user: IUserCard;
+	// 	images: IImageCard[];
+	// 	text?: string;
+	// 	likes?: unknown[];
+	// 	comments?: unknown[];
+	// 	createdAt?: string;
+	// }
+
+	export let post: IPostCard;
+	export let index: number = 0;
 
 	let showDropdown = false;
 
@@ -17,19 +38,23 @@
 	}
 
 	onMount(() => {
-		console.log('Post data:', post, index);
+		window.addEventListener('click', handleClickOutside);
+	});
+	onDestroy(() => {
+		window.removeEventListener('click', handleClickOutside);
+	});
 
-		if (typeof window !== 'undefined') {
-			window.addEventListener('click', handleClickOutside);
-		}
-	})
+	$: postImageUrl = post?.images?.[0]?.url || '/default-image.png';
+	$: src = post?.user?.src || '/default-avatar.png';
+	$: username = post?.user?.username || 'Unknown';
+	$: createdAt = post?.createdAt ? new Date(post.createdAt) : null;
 </script>
 
 <div class="rounded-xl bg-white transition-all hover:shadow-md">
-	<a href="{`/post/${post._id}`}" class="cursor-pointer">
+	<a href={`/post/${post._id}`} class="cursor-pointer">
 		<div class="w-full rounded-t-xl bg-neutral-200">
 			<img
-				src="{post.images[0].url}"
+				src={postImageUrl}
 				alt=""
 				class="h-full min-h-[220px] max-h-[220px] w-full rounded-t-xl object-cover"
 			/>
@@ -41,38 +66,26 @@
 				<div class="flex items-center">
 					<div class="h-10 w-10 rounded-full bg-neutral-200">
 						<img
-							src="{post.user.profileSrc || '/default-avatar.png'}"
-							alt="kristine_heaneyavatar"
+							src={src}
+							alt="avatar"
 							class="rounded-full"
 						/>
 					</div>
 					<div class="ml-2.5">
-						<p class="text-sm font-medium">{post.user.username || 'Unknown'}</p>
+						<p class="text-sm font-medium">{username}</p>
 						<div class="relative group flex">
 							<span class="text-gray-500 cursor-pointer text-sm">
-								{post.createdAt ? new Date(post.createdAt).toLocaleDateString('fr-FR', {
-									day: 'numeric',
-									month: 'long',
-									year: 'numeric'
-								}) : 'Date inconnue'}
+								{createdAt ? createdAt.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Date inconnue'}
 							</span>
-							{#if post.createdAt}
+							{#if createdAt}
 								<div class="absolute left-1/2 top-full z-10 hidden min-w-max -translate-x-1/2 whitespace-nowrap rounded bg-white p-2 text-xs text-black shadow-md group-hover:block">
-									{new Date(post.createdAt).toLocaleString('fr-FR', {
-										day: 'numeric',
-										month: 'long',
-										year: 'numeric',
-										hour: '2-digit',
-										minute: '2-digit',
-										second: '2-digit'
-									})}
+									{createdAt.toLocaleString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}
 								</div>
 							{/if}
 						</div>
 					</div>
 				</div>
 			</div>
-
 			<div class="flex items-center justify-between gap-3">
 				<div class="flex items-center">
 					<div class="cursor-pointer transition-all hover:scale-90 active:scale-75 con-like">
@@ -227,18 +240,18 @@
 		}
 	}
 
-.dropdown-anim {
-    animation: dropdown-fade-in 0.25s cubic-bezier(0.4,0,0.2,1);
-    transform-origin: top;
-}
-@keyframes dropdown-fade-in {
-    0% {
-        opacity: 0;
-        transform: translateY(-20px) scaleY(0.95);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0) scaleY(1);
-    }
-}
+	.dropdown-anim {
+		animation: dropdown-fade-in 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+		transform-origin: top;
+	}
+	@keyframes dropdown-fade-in {
+		0% {
+			opacity: 0;
+			transform: translateY(-20px) scaleY(0.95);
+		}
+		100% {
+			opacity: 1;
+			transform: translateY(0) scaleY(1);
+		}
+	}
 </style>

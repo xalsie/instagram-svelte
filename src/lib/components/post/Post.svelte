@@ -1,60 +1,56 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
+    import { onMount, createEventDispatcher } from 'svelte';
+    import type { IUser } from '$lib/server/models/User.ts';
+    import type { IPost } from '$lib/server/models/Post.ts';
+	import type { ILike } from '$lib/server/models/Like.ts';
+    import type { IComment } from '$lib/server/models/Comment.ts';
 
-    export let post: any;
-    export let isAuthenticated: boolean = false;
-    export let currentUser: any = null;
-    export let onCommentsHoverChange: (isHover: boolean) => void = () => {};
+    import { user, isAuthenticated } from '$lib/store.js';
+
+    export let post: IPost;
+
     let commentsDiv: HTMLDivElement;
     let isHovering = false;
-
     let lastScrollTop = 0;
+    let newComment: string = '';
+
+    const dispatch = createEventDispatcher<{ commentsHoverChange: boolean }>();
 
     function checkCommentsScroll(e?: Event) {
         if (!commentsDiv) return;
         const scrollTop = commentsDiv.scrollTop;
         const atTop = scrollTop === 0;
         const atBottom = Math.abs(scrollTop + commentsDiv.clientHeight - commentsDiv.scrollHeight) < 2;
-        // Correction :
-        // - Si on est en haut et qu'on scroll vers le bas => rien ne se passe (reste désactivé)
-        // - Si on est en bas et qu'on scroll vers le haut => rien ne se passe (reste désactivé)
-        // - Si on est en haut et qu'on scroll vers le haut => scroll assisté (onCommentsHoverChange(false))
-        // - Si on est en bas et qu'on scroll vers le bas => scroll assisté (onCommentsHoverChange(false))
         if (e && e.type === 'scroll') {
             if (scrollTop < lastScrollTop && atTop) {
-                // Scroll vers le haut et on est en haut
-                onCommentsHoverChange(false);
+                dispatch('commentsHoverChange', false);
             } else if (scrollTop > lastScrollTop && atBottom) {
-                // Scroll vers le bas et on est en bas
-                onCommentsHoverChange(false);
+                dispatch('commentsHoverChange', false);
             } else if ((scrollTop > lastScrollTop && atTop) || (scrollTop < lastScrollTop && atBottom)) {
-                // Scroll vers le bas alors qu'on est en haut OU scroll vers le haut alors qu'on est en bas
-                // => on ne fait rien, on laisse l'auto-scroll désactivé
+                // do nothing
             } else {
-                onCommentsHoverChange(true);
+                dispatch('commentsHoverChange', true);
             }
             lastScrollTop = scrollTop;
         } else {
-            // Sur mouseenter, comportement classique
             if (isHovering && (atTop || atBottom)) {
-                onCommentsHoverChange(false);
+                dispatch('commentsHoverChange', false);
             } else if (isHovering) {
-                onCommentsHoverChange(true);
+                dispatch('commentsHoverChange', true);
             }
         }
     }
-    let newComment: string = '';
 
     function handleCommentSubmit() {
-        if (newComment.trim() === '') return;
-
-        // Simulate comment submission
-        post.comments = post.comments || [];
+        if (!newComment.trim()) return;
+        if (!post.comments) post.comments = [];
         post.comments.push({
-            user: currentUser,
+            user: $user!,
+            post: post,
             text: newComment,
-            createdAt: new Date().toISOString()
-        });
+            createdAt: new Date(),
+            updatedAt: new Date()
+        } as IComment);
         newComment = '';
     }
 
@@ -64,27 +60,32 @@
         }
     }
 
-    // Simulate like functionality
     function handleLike() {
-        if (!post.likes) {
-            post.likes = [];
-        }
-        const userIndex = post.likes.findIndex((like: any) => like.userId === currentUser.id);
+        if (!post.likes) post.likes = [];
+        if (!$user) return;
+        const userId = ($user as IUser).id || $user.username;
+        const userIndex = post.likes.findIndex((like: ILike) => like.user._id === userId);
         if (userIndex > -1) {
-            post.likes.splice(userIndex, 1); // Unlike
+            post.likes.splice(userIndex, 1);
         } else {
-            post.likes.push({ userId: currentUser.id, username: currentUser.username }); // Like
+            post.likes.push({ user: $user, post: post, createdAt: new Date(), updatedAt: new Date() } as ILike);
         }
     }
 
+    // TODO: Remove this mock data once the backend is ready
     onMount(() => {
-        // si post id '6835d80336fcc3cf1e90b048' generate 50 comments
         if (post._id === '6835d80336fcc3cf1e90b048' && (!post.comments || post.comments.length < 50)) {
             post.comments = Array.from({ length: 50 }, (_, i) => ({
-                user: { username: `User${i + 1}`, displayname: `User ${i + 1}`, profileSrc: '/images/profile1.jpg' },
+                user: {
+                    username: `User${i + 1}`,
+                    displayname: `User ${i + 1}`,
+                    src: '/images/profiles/default-avatar.webp',
+                } as IUser,
                 text: `Comment ${i + 1}`,
-                createdAt: new Date(Date.now() - i * 1000 * 60 * 60).toISOString() // Comments from the past hour
-            }));
+                post: post,
+                updatedAt: new Date(Date.now() - i * 1000 * 60 * 60),
+                createdAt: new Date(Date.now() - i * 1000 * 60 * 60),
+            })) as IComment[];
         }
     });
 </script>
@@ -107,15 +108,15 @@
             <div class="flex items-center border-b border-gray-200 pb-4">
                 <div class="relative">
                     <img
-                        src={post.user?.profileSrc}
+                        src={post.user?.src}
                         alt={post.user?.username}
                         class="h-14 w-14 rounded-full border-2 object-cover {post.user?.storySrc
                             ? 'animate-pulse border-pink-500'
                             : 'border-neutral-300'}"
                     />
-                    {#if post.user?.storySrc}
+                    <!-- {#if post.user?.storySrc}
                         <span class="absolute inset-0 animate-pulse rounded-full ring-2 ring-pink-500"></span>
-                    {/if}
+                    {/if} -->
                 </div>
                 <div class="pl-3">
                     <div class="text-lg font-bold">{post.user?.displayname || post.user?.username}</div>
@@ -181,7 +182,7 @@
             <div class="mb-2 break-words text-base">
                 <div>
                     <span class="font-bold">{post.user?.displayname || post.user?.username} :</span>
-                    <span class="ml-1">{post.description || post.text}</span>
+                    <span class="ml-1">{post.text}</span>
                 </div>
                 <span class="text-xs text-gray-400">{new Date(post.createdAt).toLocaleString()}</span>
             </div>
@@ -190,9 +191,11 @@
         <!-- Commentaires -->
         <div
             class="flex-1 mt-2 overflow-y-auto"
+            aria-label="Commentaires"
+            role="region"
             bind:this={commentsDiv}
             on:mouseenter={() => { isHovering = true; checkCommentsScroll(); }}
-            on:mouseleave={() => { isHovering = false; onCommentsHoverChange(false); }}
+            on:mouseleave={() => { isHovering = false; dispatch('commentsHoverChange', false); }}
             on:scroll={checkCommentsScroll}
         >
             {#if post.comments && post.comments.length > 0}
@@ -215,11 +218,11 @@
         </div>
 
         <!-- Input pour poster un commentaire, visible seulement si l'utilisateur est connecté -->
-        {#if isAuthenticated && currentUser}
+        {#if $isAuthenticated && $user}
             <div class="flex items-end gap-2 mt-4">
                 <img
-                    src={currentUser.profileSrc}
-                    alt={currentUser.username}
+                    src={$user.src}
+                    alt={$user.username}
                     class="h-10 w-10 rounded-full object-cover border border-neutral-300 mt-1"
                 />
                 <div class="flex-1">

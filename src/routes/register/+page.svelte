@@ -1,10 +1,10 @@
-<script>
-	let username = '';
-	let email = '';
-	let password = '';
-	let error = '';
-	let success = '';
-	async function handleRegister() {
+<script lang="ts">
+	let username: string = '';
+	let email: string = '';
+	let password: string = '';
+	let error: string = '';
+	let success: string = '';
+	async function handleRegister(): Promise<void> {
 		error = '';
 		success = '';
 		const res = await fetch('/api/register', {

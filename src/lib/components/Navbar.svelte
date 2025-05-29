@@ -178,7 +178,7 @@
 						<button type="button" on:click={handleAvatarClick} class="flex items-center justify-center">
 							<!-- src="https://cdn.discordapp.com/avatars/306487572740177920/ce3920162ef416ae4e22764b1f737e8c.webp?size=160" -->
 							<img
-								src={$user?.profileSrc || '/default-avatar.png'}
+								src={$user?.src || '/images/profiles/default-avatar.webp'}
 								alt="avatar-{$user?.username || 'default'}"
 								class="h-6 w-6 cursor-pointer rounded-full outline outline-white"
 							/>

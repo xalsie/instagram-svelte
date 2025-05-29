@@ -11,7 +11,7 @@
 	let imgIndex: number;
 	let images: any[];
 	let username: string;
-	let profileSrc: string;
+	let src: string;
 	let prevUser: any = null, nextUser: any = null;
 
 	$: user = $page.data.user;
@@ -19,7 +19,7 @@
 	$: imgIndex = $page.data.imgIndex;
 	$: images = user?.images ?? [];
 	$: username = user?.username ?? '';
-	$: profileSrc = user?.profileSrc ?? '';
+	$: src = user?.src ?? '';
 	$: {
 		const idx = users.findIndex((u: any) => u.username === username);
 		prevUser = idx > 0 ? users[idx - 1] : null;
@@ -173,10 +173,10 @@
 			user = newUser;
 			images = user.images;
 			username = user.username;
-			profileSrc = user.profileSrc;
+			src = user.src;
 			imgPath = images?.[imgIndex]?.url ?? '';
 		} else {
-			user = { displayname: '', profileSrc: '', images: [] };
+			user = { displayname: '', src: '', images: [] };
 			images = [];
 			imgPath = '';
 		}
@@ -217,7 +217,7 @@
 					aria-current={u.username === username ? 'true' : undefined}
 				>
 					<img
-						src={u.profileSrc}
+						src={u.src}
 						alt={u.displayname}
 						class="h-12 w-12 rounded-full border-2 object-cover shadow-md transition-all duration-200 {u.username ===
 						username

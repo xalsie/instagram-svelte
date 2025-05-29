@@ -1,0 +1,10 @@
+// Point d'entrée pour tous les modèles mongoose
+export { default as User } from './models/User';
+export { default as Story } from './models/Story';
+export { default as Image } from './models/Image';
+export { default as Like } from './models/Like';
+export { default as Comment } from './models/Comment';
+export { default as Notification } from './models/Notification';
+export { default as Message } from './models/Message';
+export { default as Post } from './models/Post';
+export { default as Follow } from './models/Follow';
