@@ -1,5 +1,7 @@
-
 import mongoose from 'mongoose';
+
+import '$lib/server/models';
+
 import dotenv from 'dotenv';
 dotenv.config();
 

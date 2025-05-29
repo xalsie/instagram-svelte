@@ -40,7 +40,9 @@
 			const data = await response.json();
 			post = data.post || data;
 			nextPosts = data.nextPosts || [];
-			await fetchOlderPosts(post.createdAt);
+			if (post) {
+				await fetchOlderPosts(post.createdAt);
+			}
 		} else {
 			post = null;
 		}

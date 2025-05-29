@@ -74,7 +74,7 @@
 
     // TODO: Remove this mock data once the backend is ready
     onMount(() => {
-        if (post._id === '6835d80336fcc3cf1e90b048' && (!post.comments || post.comments.length < 50)) {
+        if (post._id === '6834d2646d6cdd8dcc51b044' && (!post.comments || post.comments.length < 50)) {
             post.comments = Array.from({ length: 50 }, (_, i) => ({
                 user: {
                     username: `User${i + 1}`,
@@ -114,9 +114,6 @@
                             ? 'animate-pulse border-pink-500'
                             : 'border-neutral-300'}"
                     />
-                    <!-- {#if post.user?.storySrc}
-                        <span class="absolute inset-0 animate-pulse rounded-full ring-2 ring-pink-500"></span>
-                    {/if} -->
                 </div>
                 <div class="pl-3">
                     <div class="text-lg font-bold">{post.user?.displayname || post.user?.username}</div>
@@ -125,9 +122,6 @@
             </div>
             <!-- Like + description -->
             <div class="flex items-center gap-4">
-                <!-- <button class="text-red-500 font-bold flex items-center gap-1" on:click={handleLike}>
-                    ❤️ <span>{post.likes?.length || 0}</span>
-                </button> -->
                 <div class="flex items-center">
                     <div class="con-like cursor-pointer transition-all hover:scale-90 active:scale-75">
                         <input class="like" type="checkbox" title="like" />
@@ -176,7 +170,11 @@
                             </svg>
                         </div>
                     </div>
-                    <p class="ml-1 text-xs font-semibold">20 000</p>
+                    <p class="ml-1 text-xs font-semibold">
+                        {post.likes && post.likes.length > 0
+                            ? post.likes.length + (post.likes.length > 1 ? ' likes' : ' like')
+                            : '0 like'}
+                    </p>
                 </div>
             </div>
             <div class="mb-2 break-words text-base">

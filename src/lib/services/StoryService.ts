@@ -1,8 +1,11 @@
-// Service métier pour la gestion des stories
-import Story from '../server/models/Story';
+import { connectDB } from '$lib/server/db';
+
+import Story from '$lib/server/models/Story';
 
 export class StoryService {
     static async getRecentStories() {
+        await connectDB();
+
         const now = new Date();
         const stories = await Story.find({ updatedAt: { $gte: new Date(now.getTime() - 24 * 60 * 60 * 1000) } })
             .sort({ updatedAt: -1 })

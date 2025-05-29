@@ -1,9 +1,11 @@
-import { connectDB } from '../server/db';
+import { connectDB } from '$lib/server/db';
 
-import User from '../server/models/User';
+import User from '$lib/server/models/User';
 
 export class UserService {
     static async register({ username, email, password }: { username: string, email: string, password: string }) {
+        await connectDB();
+
         const existing = await User.findOne({ $or: [{ username }, { email }] });
         console.log('Checking existing user:', existing);
         if (existing) {
@@ -15,6 +17,8 @@ export class UserService {
     }
 
     static async login({ username, password }: { username: string, password: string }) {
+        await connectDB()
+
         const user = await User.findOne({ username });
         if (!user) {
             throw new Error('User not found');
@@ -28,10 +32,14 @@ export class UserService {
     }
 
     static async getAll() {
+        await connectDB();
+
         return User.find().select('-password').lean();
     }
 
     static async getByUsername(username: string) {
+        await connectDB();
+
         return User.findOne({ username }).select('-password').lean();
     }
 }

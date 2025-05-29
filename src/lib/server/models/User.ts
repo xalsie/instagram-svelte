@@ -3,13 +3,6 @@ import mongoose, { Schema, Document, Model } from 'mongoose';
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { connectDB } from '../db';
-// Ensure the database connection is established
-connectDB().catch(err => {
-    console.error('Failed to connect to the database:', err);
-    process.exit(1); // Exit the process if the connection fails
-});
-
 // Define the IUser interface for TypeScript
 import bcrypt from 'bcryptjs';
 
@@ -18,7 +11,7 @@ export interface IUser extends Document {
     username: string;
     email?: string;
     displayname?: string;
-    srcng;
+    src?: string;
     password: string;
     createdAt: Date;
     updatedAt?: Date;
@@ -31,7 +24,7 @@ const UserSchema = new Schema<IUser>({
     username: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
     displayname: { type: String },
-    srce: String, default: '/images/profiles/default-avatar.webp' },
+    src: { type: String, default: '/images/profiles/default-avatar.webp' },
     password: { type: String, required: true },
 }, {
     timestamps: true
