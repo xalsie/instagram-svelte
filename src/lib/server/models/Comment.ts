@@ -4,6 +4,7 @@ import type { IUser } from './User';
 import type { IPost } from './Post';
 
 export interface IComment extends Document {
+    _id: Schema.Types.ObjectId;
     user: IUser;
     post: IPost;
     text: string;

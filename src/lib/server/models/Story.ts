@@ -5,7 +5,7 @@ import type { IImage } from './Image';
 
 export interface IStory extends Document {
     user: IUser;
-    images: IImage[];
+    image: IImage[];
     delay: number; // Delay in milliseconds
     createdAt: Date;
     updatedAt: Date;
@@ -13,7 +13,7 @@ export interface IStory extends Document {
 
 const StorySchema = new Schema<IStory>({
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    images: [{ type: Schema.Types.ObjectId, ref: 'Image' }],
+    image: [{ type: Schema.Types.ObjectId, ref: 'Image' }],
     delay: { type: Number, default: 5000 }, // Default delay of 5 seconds
 }, {
     timestamps: true

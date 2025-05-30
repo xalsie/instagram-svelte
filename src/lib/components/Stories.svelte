@@ -1,49 +1,51 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import StoryButton from "$lib/components/StoryButton.svelte";
-	import { createEventDispatcher } from 'svelte';
+
+	import { isAuthenticated } from '$lib/store.js';
 
 	import type { IUser } from '$lib/server/models/User';
+	import type { IStory } from '$lib/server/models/Story';
 
-	// type User = {
-	// 	username: string;
-	// 	displayname: string;
-	// 	src: string;
-	// 	images?: { src: string; alt: string }[];
-	// 	storyId?: string;
-	// 	expiresAt?: string;
-	// };
+	let users: any[] = [];
+	let loadingUsers = true;
 
-	export let data: IUser[];
-	const dispatch = createEventDispatcher();
-
-	function handleOpenStory(user: IUser, imgIdx: number = 1) {
-		dispatch('openStory', { user, imgIdx });
+	async function fetchUsers() {
+		loadingUsers = true;
+		const res = await fetch('/api/stories');
+		if (res.ok) {
+			const stories: IStory[] = await res.json();
+			users = stories.map((story) => ({
+				...story.user,
+				images: story.image,
+				storyId: story._id,
+				delay: story.delay
+			}));
+		} else {
+			users = [];
+		}
+		loadingUsers = false;
 	}
+
+	onMount(() => {
+		fetchUsers();
+	});
 </script>
 
+{#if isAuthenticated}
 <div class="relative mb-4 flex w-full md:max-w-8/10 justify-self-center overflow-hidden">
 	<div
 		class="relative flex flex-1 flex-nowrap space-x-4 overflow-hidden rounded-xl pt-2 pb-2 lg:p-4 ml-4 mr-4"
 	>
 		<div class="flex flex-nowrap gap-6 overflow-x-scroll scrollbar-none pl-1 pr-5 no-scrollbar">
 			<ul class="flex gap-6 list-none overflow-x-auto scroll-container">
-				{#each data as user}
+				{#each users as user}
 					<li class="flex flex-col items-center">
 						<StoryButton
-							path={null}
-							imgSrc={user.src}
-							on:click={() => handleOpenStory(user, 1)}
+							user={user}
 						>
 							{user.displayname}
 						</StoryButton>
-						<!-- Miniatures des images de l'utilisateur -->
-						<!-- <div class="flex gap-1 mt-1">
-							{#each user.images as img, i}
-								<button type="button" on:click={() => handleOpenStory(user, i+1)}>
-									<img src={img.src} alt={img.alt} class="w-6 h-6 rounded object-cover border border-white" />
-								</button>
-							{/each}
-						</div> -->
 					</li>
 				{/each}
 			</ul>
@@ -90,3 +92,4 @@
 		>
 	</div>
 </div>
+{/if}

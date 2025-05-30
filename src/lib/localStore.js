@@ -28,6 +28,13 @@ export const localStore = (key, initial) => {
             }
             return set(value);
         },
-        update,
+        update(fn) {
+            if (hasLocalStorage) {
+                const currentValue = toObj(localStorage.getItem(key)); // get current value from local storage
+                const newValue = fn(currentValue); // apply the update function
+                localStorage.setItem(key, toString(newValue)); // save updated value to local storage
+            }
+            return update(fn);
+        }
     };
 };

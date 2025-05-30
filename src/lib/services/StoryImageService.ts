@@ -8,17 +8,18 @@ export class StoryImageService {
         await connectDB();
 
         const user = await User.findOne({ username })
-            .select('-password -email -createdAt -updatedAt -followers -following -bio -username')
+            .select('-password -email -createdAt -updatedAt -followers -following -bio')
             .lean();
         if (!user) {
             return { error: 'User not found', status: 404 };
         }
         const now = new Date();
         const userId = user && (user._id || user.id);
+        // Correction : le champ dans le modèle Story est 'image' (pas 'images')
         const userStories = await Story.find({ user: userId })
-            .populate({ path: 'images', model: 'Image' })
+            .populate({ path: 'image', model: 'Image' })
             .lean();
-        const images = userStories.flatMap(story => Array.isArray(story.images) ? story.images : []);
+        const images = userStories.flatMap(story => Array.isArray(story.image) ? story.image : (story.image ? [story.image] : []));
         if (images.length === 0) {
             return { error: 'No active story for this user', status: 404 };
         }
@@ -30,7 +31,7 @@ export class StoryImageService {
         const allStories = await Story.find({ updatedAt: { $gte: new Date(now.getTime() - 24 * 60 * 60 * 1000) } })
             .sort({ updatedAt: -1 })
             .populate({ path: 'user', select: '-password -email -createdAt -updatedAt -followers -following -bio' })
-            .populate({ path: 'images', model: 'Image', select: '-createdAt -updatedAt' })
+            .populate({ path: 'image', model: 'Image', select: '-createdAt -updatedAt' })
             .lean();
         const userMap = new Map();
         for (const story of allStories) {
@@ -45,7 +46,7 @@ export class StoryImageService {
                 });
             }
             const arr = userMap.get(u.username).images;
-            for (const img of story.images || []) {
+            for (const img of story.image || []) {
                 arr.push({
                     ...img,
                     _id: img._id?.toString?.() ?? img._id,
@@ -56,11 +57,14 @@ export class StoryImageService {
         }
         const users = Array.from(userMap.values());
         const safeUser = {
-            ...user, _id: user._id?.toString?.() ?? user._id, images: images.map(img => ({
+            ...user,
+            _id: user._id?.toString?.() ?? user._id,
+            images: images.map(img => ({
                 ...img,
                 _id: img._id?.toString?.() ?? img._id,
-                user: img.user?.toString?.() ?? img.user,
-            }))
+                user: img.user?.toString?.() ?? img.user
+            })),
+            storyId: user.storyId ? user.storyId.toString() : undefined,
         };
         return { user: safeUser, users, imgIndex };
     }

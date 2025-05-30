@@ -4,7 +4,9 @@
 	import { page } from '$app/stores';
 	import { spring } from 'svelte/motion';
 
-	export let data: any;
+	import { storyViews } from '$lib/store.js';
+
+	// export let data: any;
 
 	let user: any;
 	let users: any[];
@@ -15,7 +17,7 @@
 	let prevUser: any = null, nextUser: any = null;
 
 	$: user = $page.data.user;
-	$: users = $page.data.users || [$page.data.user];
+	$: users = ($page.data.users || [$page.data.user]).filter((u: any) => u && u.username);
 	$: imgIndex = $page.data.imgIndex;
 	$: images = user?.images ?? [];
 	$: username = user?.username ?? '';
@@ -45,7 +47,35 @@
 		} else {
 			const idx = users.findIndex((u: any) => u.username === username);
 			if (idx !== -1 && idx < users.length - 1) {
-				goto(`/images/${users[idx + 1].username}/1`, { replaceState: true });
+				const next = users[idx + 1];
+				if (!next || !next.username) {
+					goto('/');
+					return;
+				}
+				const views = $storyViews;
+				const entry = views[next._id];
+				const now = Date.now();
+				let allSeen = false;
+				let firstNotSeenIdx = 0;
+				if (entry && (now - entry.timestamp < 24 * 60 * 60 * 1000)) {
+					const seen = Array.isArray(entry.imagesSeen) ? entry.imagesSeen : [];
+					if (next.images?.length) {
+						allSeen = seen.length >= next.images.length;
+						if (!allSeen) {
+							for (let i = 0; i < next.images.length; i++) {
+								if (!seen.includes(i)) {
+									firstNotSeenIdx = i;
+									break;
+								}
+							}
+						}
+					}
+				}
+				if (allSeen) {
+					goto('/');
+				} else {
+					goto(`/images/${next.username}/${firstNotSeenIdx + 1}`, { replaceState: true });
+				}
 			} else {
 				goto('/');
 			}
@@ -122,13 +152,10 @@
 	}
 
 	let autoPlay: boolean = true;
-	// export let autoPlayDelay: number = 4000;
-	// current user image delay
-	// let autoPlayDelay: number =  images?.[imgIndex]?.delay || 4000;
 
 	let autoPlayTimeout: ReturnType<typeof setTimeout>;
-	let progress = 0;
 	let progressInterval: ReturnType<typeof setInterval>;
+	let progress = 0;
 
 	function startAutoPlay() {
 		stopAutoPlay();
@@ -136,7 +163,6 @@
 			progress = 0;
 			let lastImageSize = 0;
 			let autoPlayDelay: number =  images?.[imgIndex]?.delay || 4000;
-			console.log('AutoPlay started with delay:', images?.[imgIndex], autoPlayDelay);
 			const step = 100 / (autoPlayDelay / 10);
 			progressInterval = setInterval(() => {
 				if (imageElement && imageElement.clientWidth !== lastImageSize) {
@@ -148,9 +174,24 @@
 			}, 10);
 			autoPlayTimeout = setTimeout(() => {
 				stopAutoPlay();
+				markStoryViewed();
 				gotoNextStory();
 			}, autoPlayDelay + 150);
 		}
+	}
+
+	function markStoryViewed() {
+		if (!user || !user._id || !user.images?.length) return;
+		const now = Date.now();
+		storyViews.update((views: Record<string, { timestamp: number; imagesSeen: number[] }>) => {
+			const prev = views[user._id] || { imagesSeen: [] };
+			const seen = new Set(prev.imagesSeen || []);
+			seen.add(imgIndex);
+			return {
+				...views,
+				[user._id]: { timestamp: now, imagesSeen: Array.from(seen) }
+			};
+		});
 	}
 
 	function stopAutoPlay() {
@@ -161,14 +202,12 @@
 
 	onMount(() => {
 		if (autoPlay) startAutoPlay();
-		console.log(data)
+		console.log("datas", $page.data)
 		return () => stopAutoPlay();
 	});
 
 	$: {
-		// imgIndex is now always derived from page.data.imgIndex
-		// On récupère l'utilisateur depuis la liste users (passée par le load)
-		const newUser = users.find((u: any) => u.username === $page.params.username);
+		const newUser = users.find((u: any) => u && u.username === $page.params.username);
 		if (newUser) {
 			user = newUser;
 			images = user.images;
