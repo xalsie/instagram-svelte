@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { onMount, createEventDispatcher } from 'svelte';
+	import { createEventDispatcher } from 'svelte';
+	import { writable } from 'svelte/store';
+	import { user, isAuthenticated } from '$lib/store.js';
+
 	import type { IUser } from '$lib/server/models/User.ts';
 	import type { IPost } from '$lib/server/models/Post.ts';
 	import type { ILike } from '$lib/server/models/Like.ts';
 	import type { IComment } from '$lib/server/models/Comment.ts';
-	import { user, isAuthenticated } from '$lib/store.js';
-	import { get } from 'svelte/store';
-	import { writable, derived } from 'svelte/store';
 
 	export let post: IPost;
 
@@ -19,18 +19,14 @@
 		Array<{ text: string; user: IUser; createdAt: Date; error?: string }>
 	>([]);
 
-	// Rend la liste des commentaires réactive
 	const comments = writable<IComment[]>(post.comments ? [...post.comments] : []);
 
-	// Synchronise automatiquement comments avec post.comments si post change (ex: navigation)
 	$: if (post.comments && post.comments !== $comments) {
 		comments.set([...post.comments]);
 	}
 
-	// Likes store for reactivity
 	const likes = writable<ILike[]>(post.likes ? [...post.likes] : []);
 
-	// Keep likes store in sync if post.likes changes externally
 	$: if (post.likes && post.likes !== $likes) {
 		likes.set([...post.likes]);
 	}
@@ -95,7 +91,6 @@
 	async function handleLike() {
 		if (!$user) return;
 		const userId = ($user as IUser)._id || $user.username;
-		// Ne pas permettre plusieurs likes pour un même user/post
         console.log('likes', $likes)
 		let existingLike = $likes.find((like: ILike) => like.user._id === userId)
 		let alreadyLiked = !!existingLike;
@@ -104,19 +99,15 @@
 		try {
 			let res;
 			if (alreadyLiked) {
-				// Unlike (soft delete)
 				res = await fetch(`/api/posts/${post._id}/like/${likeId}`, { method: 'DELETE' });
 			} else {
-				// Like (POST)
 				res = await fetch(`/api/posts/${post._id}/like`, { method: 'POST' });
 			}
 			if (res.ok) {
 				const data = await res.json();
 				if (alreadyLiked) {
-					// Retire le like du store
 					likes.update((list) => list.filter((like: ILike) => like.user._id !== userId));
 				} else {
-					// Ajoute le like seulement s'il n'existe pas déjà (évite doublons)
 					likes.update((list) => {
 						if (!list.some((like: ILike) => like.user._id === userId)) {
 							return [...list, data.like];
@@ -131,14 +122,9 @@
 			console.error('Failed to update like status');
 		}
 
-		// Keep post.likes in sync for parent/child consistency
 		post.likes = $likes;
 	}
 
-	// Dummy checkCommentsScroll for now
-	function checkCommentsScroll() {}
-
-	// Ajoute la logique d'édition et de suppression
 	function canEditComment(comment: IComment) {
 		if (!user || !comment.user) return false;
 		const isOwner = comment.user._id === $user._id;
@@ -161,7 +147,6 @@
 			comments.update((list) =>
 				list.map((c) => (c._id === comment._id ? { ...c, ...updated } : c))
 			);
-			// Synchronise post.comments pour garder la cohérence
 			post.comments = $comments;
 		}
 	}
@@ -173,30 +158,26 @@
 		}
 	}
 
-	// Edition d'un commentaire
-	let editingCommentId: string | null = null;
-	let editingText = '';
+	let editingCommentId: string = '';
+	let editingText: string = '';
 
 	function startEdit(comment: IComment) {
-		editingCommentId = comment._id;
+		editingCommentId = comment._id.toString();
 		editingText = comment.text;
 	}
 
 	function cancelEdit() {
-		editingCommentId = null;
+		editingCommentId = '';
 		editingText = '';
 	}
 
 	async function saveEdit(comment: IComment) {
 		await handleEditComment(comment, editingText);
-		editingCommentId = null;
+		editingCommentId = '';
 		editingText = '';
 	}
 
-	onMount(() => {
-		// Dummy checkCommentsScroll for now (can be improved for infinite scroll, etc.)
-		function checkCommentsScroll() {}
-	});
+	// onMount(() => {});
 </script>
 
 <div class="mx-auto flex w-full max-w-4xl flex-col overflow-hidden bg-white md:flex-row">
@@ -245,7 +226,7 @@
 								fill="currentColor"
 								stroke-width="0"
 								viewBox="0 0 512 512"
-								class="cursor-pointer outline transition-all"
+								class="cursor-pointer transition-all"
 								height="1em"
 								width="1em"
 								xmlns="http://www.w3.org/2000/svg"
@@ -304,13 +285,11 @@
 			bind:this={commentsDiv}
 			on:mouseenter={() => {
 				isHovering = true;
-				checkCommentsScroll();
 			}}
 			on:mouseleave={() => {
 				isHovering = false;
 				dispatch('commentsHoverChange', false);
 			}}
-			on:scroll={checkCommentsScroll}
 		>
 			{#if $comments && $comments.length > 0}
 				<ul class="list-none p-0">
@@ -319,7 +298,7 @@
 							<span class="font-bold">
 								{comment.user?.displayname || comment.user?.username} :
 							</span>
-							{#if editingCommentId === comment._id}
+							{#if editingCommentId === comment._id.toString()}
 								<input type="text" bind:value={editingText} class="rounded border px-1 text-sm" />
 								<button class="ml-1 text-xs text-blue-500" on:click={() => saveEdit(comment)}>
 									Enregistrer
@@ -370,7 +349,6 @@
 			{/if}
 		</div>
 
-		<!-- Input pour poster un commentaire, visible seulement si l'utilisateur est connecté -->
 		{#if $isAuthenticated && $user}
 			<div class="mt-4 flex items-end gap-2">
 				<img
@@ -381,7 +359,6 @@
 				<div class="flex-1">
 					<div class="mb-1 flex items-center gap-2">
 						<span class="text-xs text-gray-500">Poster un commentaire</span>
-						<!-- Emojis rapides -->
 						{#each ['😍', '🔥', '😂', '👏', '😮'] as emoji}
 							<button
 								type="button"
@@ -438,7 +415,6 @@
 		align-items: center;
 	}
 
-	.con-like .outline,
 	.con-like .filled {
 		fill: var(--red);
 		position: absolute;
