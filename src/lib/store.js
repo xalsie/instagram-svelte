@@ -17,3 +17,4 @@ export const user = localStore("user", {
 });
 export const token = localStore("token", "");
 export const isAuthenticated = localStore("isAuthenticated", false);
+export const storyViews = localStore('storyViews', {});

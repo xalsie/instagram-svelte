@@ -13,6 +13,9 @@ export interface IUser extends Document {
     displayname?: string;
     src?: string;
     password: string;
+    bio?: string;
+    followers?: Schema.Types.ObjectId[];
+    following?: Schema.Types.ObjectId[];
     createdAt: Date;
     updatedAt?: Date;
     __v?: number;
