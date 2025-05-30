@@ -15,8 +15,8 @@ export class PostService {
             .sort({ createdAt: -1 })
             .populate({ path: 'user', select: '-password' })
             .populate({ path: 'images', model: 'Image' })
-            .populate({ path: 'comments', model: 'Comment', populate: { path: 'user', select: '-password' } })
-            .populate({ path: 'likes', model: 'Like', populate: { path: 'user', select: '-password' } })
+            .populate({ path: 'comments', model: 'Comment', match: { DELETE: { $ne: true } }, populate: { path: 'user', select: '-password' } })
+            .populate({ path: 'likes', model: 'Like', match: { DELETE: { $ne: true } }, populate: { path: 'user', select: '-password' } })
 
         if (typeof limit === 'number') {
             postQuery = postQuery.limit(limit);
@@ -34,8 +34,8 @@ export class PostService {
         const post = await Post.findById(id)
             .populate({ path: 'user', select: '-password' })
             .populate({ path: 'images', model: 'Image' })
-            .populate({ path: 'comments', model: 'Comment', populate: { path: 'user', select: '-password' } })
-            .populate({ path: 'likes', model: 'Like', populate: { path: 'user', select: '-password' } })
+            .populate({ path: 'comments', model: 'Comment', match: { DELETE: { $ne: true } }, populate: { path: 'user', select: '-password' } })
+            .populate({ path: 'likes', model: 'Like', match: { DELETE: { $ne: true } }, populate: { path: 'user', select: '-password' } })
             .lean();
 
         return post;
