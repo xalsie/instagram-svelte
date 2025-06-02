@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { user, token, isAuthenticated } from '$lib/store.js';
+	import { user, token, isAuthenticated } from '$lib/store';
 	let username: string = '';
 	let password: string = '';
 	let errorMessage: string = '';

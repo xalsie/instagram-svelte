@@ -1,4 +1,7 @@
-export function requireAuth(locals) {
+/**
+ * @param {any} locals
+ */
+export function requireAuth(locals: any) {
 	if (!locals.user || !locals.user.id) {
 		throw new Error('Unauthorized');
 	}

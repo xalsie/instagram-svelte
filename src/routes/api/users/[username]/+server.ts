@@ -13,7 +13,7 @@ export async function GET({ params }) {
 			return json({ error: 'User not found' }, { status: 404 });
 		}
 		return json({ user });
-	} catch (e) {
+	} catch (e: any) {
 		return json({ error: e.message || 'Server error' }, { status: 500 });
 	}
 }

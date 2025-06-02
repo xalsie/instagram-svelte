@@ -82,7 +82,7 @@ async function seed() {
 		text: 'Super post Alice !',
 		createdAt: new Date()
 	});
-	post.comments.push(comment._id);
+	if (post.comments) post.comments.push(comment._id as any);
 	await post.save();
 
 	// Like
@@ -91,7 +91,7 @@ async function seed() {
 		post: post._id,
 		createdAt: new Date()
 	});
-	post.likes.push(like._id);
+	if (post.likes) post.likes.push(like._id as any);
 	await post.save();
 
 	// Follow

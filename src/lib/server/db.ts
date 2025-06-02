@@ -7,7 +7,18 @@ dotenv.config();
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
-let cached = global.mongoose;
+// Ajout d'une interface globale pour mongoose
+interface MongooseCache {
+	conn: any;
+	promise: any;
+}
+
+declare global {
+	// eslint-disable-next-line no-var
+	var mongoose: MongooseCache | undefined;
+}
+
+let cached: MongooseCache = global.mongoose as MongooseCache;
 if (!cached) {
 	cached = global.mongoose = { conn: null, promise: null };
 }
@@ -25,7 +36,7 @@ export async function connectDB() {
 			.then(() => {
 				console.log('Connected to MongoDB');
 			})
-			.catch((err) => {
+			.catch((err: unknown) => {
 				console.error('MongoDB connection error:', err);
 			});
 	}

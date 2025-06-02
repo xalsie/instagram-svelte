@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
+import '@testing-library/jest-dom';
 import Page from './+page.svelte';
 
 describe('Page', () => {

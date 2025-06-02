@@ -4,7 +4,7 @@
 	import { page } from '$app/stores';
 	import { spring } from 'svelte/motion';
 
-	import { storyViews } from '$lib/store.js';
+	import { storyViews } from '$lib/store';
 
 	let user: any;
 	let users: any[];
@@ -57,7 +57,7 @@
 					goto('/');
 					return;
 				}
-				const views = $storyViews;
+				const views = $storyViews as Record<string, any>;
 				const entry = views[next._id];
 				const now = Date.now();
 				let allSeen = false;

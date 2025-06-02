@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import StoryButton from '$lib/components/StoryButton.svelte';
 
-	import { isAuthenticated } from '$lib/store.js';
+	import { isAuthenticated } from '$lib/store';
 
 	import type { IStory } from '$lib/server/models/Story';
 
@@ -16,7 +16,7 @@
 			const stories: IStory[] = await res.json();
 			users = stories.map((story) => ({
 				...story.user,
-				images: story.images,
+				images: story.image,
 				storyId: story._id
 			}));
 		} else {

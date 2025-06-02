@@ -3,7 +3,7 @@
 	import { fade } from 'svelte/transition';
 	import Card from './card/Card.svelte';
 	import CardSkeleton from './card/Card.Skeleton.svelte';
-	import { user as userStore } from '$lib/store.js';
+	import { user as userStore } from '$lib/store';
 
 	import type { IPost } from '$lib/server/models/Post';
 

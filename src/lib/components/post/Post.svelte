@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import { writable } from 'svelte/store';
-	import { user, isAuthenticated } from '$lib/store.js';
+	import { user, isAuthenticated } from '$lib/store';
 
-	import type { IUser } from '$lib/server/models/User.ts';
+	import type { UserLite } from '../../types';
 	import type { IPost } from '$lib/server/models/Post.ts';
 	import type { ILike } from '$lib/server/models/Like.ts';
 	import type { IComment } from '$lib/server/models/Comment.ts';
@@ -13,10 +13,10 @@
 	let newComment = '';
 	let commentsDiv: HTMLDivElement | null = null;
 	let isHovering = false;
-	const dispatch = createEventDispatcher();
+	const dispatch = createEventDispatcher<{ commentsHoverChange: boolean }>();
 
 	const pendingComments = writable<
-		Array<{ text: string; user: IUser; createdAt: Date; error?: string }>
+		Array<{ text: string; user: UserLite; createdAt: Date; error?: string }>
 	>([]);
 
 	const comments = writable<IComment[]>(post.comments ? [...post.comments] : []);
@@ -36,7 +36,7 @@
 		if (!$user) return;
 		const tempComment = {
 			text: newComment,
-			user: $user,
+			user: $user as UserLite,
 			createdAt: new Date(),
 			error: undefined
 		};
@@ -90,9 +90,9 @@
 
 	async function handleLike() {
 		if (!$user) return;
-		const userId = ($user as IUser)._id || $user.username;
+		const userId = $user._id || $user.username;
 		console.log('likes', $likes);
-		let existingLike = $likes.find((like: ILike) => like.user._id === userId);
+		let existingLike = $likes.find((like: ILike) => like.user._id.toString() === userId.toString());
 		let alreadyLiked = !!existingLike;
 		let likeId = existingLike?._id;
 
@@ -106,10 +106,12 @@
 			if (res.ok) {
 				const data = await res.json();
 				if (alreadyLiked) {
-					likes.update((list) => list.filter((like: ILike) => like.user._id !== userId));
+					likes.update((list) =>
+						list.filter((like: ILike) => like.user._id.toString() !== userId.toString())
+					);
 				} else {
 					likes.update((list) => {
-						if (!list.some((like: ILike) => like.user._id === userId)) {
+						if (!list.some((like: ILike) => like.user._id.toString() === userId.toString())) {
 							return [...list, data.like];
 						}
 						return list;
@@ -126,8 +128,8 @@
 	}
 
 	function canEditComment(comment: IComment) {
-		if (!user || !comment.user) return false;
-		const isOwner = comment.user._id === $user._id;
+		if (!$user || !comment.user) return false;
+		const isOwner = comment.user._id.toString() === $user._id.toString();
 		const lessThanOneMinute = Date.now() - new Date(comment.createdAt).getTime() < 60 * 1000;
 		return isOwner && lessThanOneMinute;
 	}
@@ -204,7 +206,7 @@
 					/>
 				</div>
 				<div class="pl-3">
-					<div class="text-lg font-bold">{post.user?.displayname || post.user?.username}</div>
+					<div class="text-lg font-bold">{post.user?.username}</div>
 					<div class="text-xs text-gray-500">{new Date(post.createdAt).toLocaleString()}</div>
 				</div>
 			</div>
@@ -216,7 +218,9 @@
 							class="like"
 							type="checkbox"
 							title="like"
-							checked={$likes && $user && $likes.some((like) => like.user._id === $user._id)}
+							checked={$likes &&
+								$user &&
+								$likes.some((like) => like.user._id.toString() === $user._id.toString())}
 							on:change={handleLike}
 							aria-label="Like this post"
 						/>
@@ -270,7 +274,7 @@
 			<!-- Texte du post -->
 			<div class="mb-2 text-base break-words">
 				<div>
-					<span class="font-bold">{post.user?.displayname || post.user?.username} :</span>
+					<span class="font-bold">{post.user?.username} :</span>
 					<span class="ml-1">{post.text}</span>
 				</div>
 				<span class="text-xs text-gray-400">{new Date(post.createdAt).toLocaleString()}</span>
@@ -285,6 +289,7 @@
 			bind:this={commentsDiv}
 			on:mouseenter={() => {
 				isHovering = true;
+				dispatch('commentsHoverChange', true);
 			}}
 			on:mouseleave={() => {
 				isHovering = false;
@@ -296,7 +301,7 @@
 					{#each $comments as comment (comment._id)}
 						<li class="flex items-center gap-2 pb-1">
 							<span class="font-bold">
-								{comment.user?.displayname || comment.user?.username} :
+								{comment.user?.username} :
 							</span>
 							{#if editingCommentId === comment._id.toString()}
 								<input type="text" bind:value={editingText} class="rounded border px-1 text-sm" />
@@ -332,7 +337,7 @@
 					{#each $pendingComments as comment}
 						<li class="pb-1">
 							<span class="font-bold">
-								{comment.user?.displayname || comment.user?.username} :
+								{comment.user?.username} :
 							</span>
 							<span class={comment.error ? 'text-red-500' : ''}>{comment.text}</span>
 							<span class="ml-2 text-xs text-gray-400">

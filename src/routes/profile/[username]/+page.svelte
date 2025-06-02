@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Navbar from '$lib/components/Navbar.svelte';
-	import { user as userStore } from '$lib/store.js';
+	import { user as userStore } from '$lib/store';
 
 	let user: any = null;
 	let posts: any[] = [];

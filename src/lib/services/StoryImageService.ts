@@ -70,8 +70,7 @@ export class StoryImageService {
 				...img,
 				_id: img._id?.toString?.() ?? img._id,
 				user: img.user?.toString?.() ?? img.user
-			})),
-			storyId: user.storyId ? user.storyId.toString() : undefined
+			}))
 		};
 		return { user: safeUser, users, imgIndex };
 	}

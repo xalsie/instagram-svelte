@@ -77,7 +77,7 @@
 					await fetchOlderPosts(
 						olderPosts.length > 0
 							? olderPosts[olderPosts.length - 1].createdAt
-							: post?.createdAt || ''
+							: (post?.createdAt ?? new Date())
 					);
 				}
 			},
@@ -151,7 +151,7 @@
 				class="flex w-full"
 				style="scroll-margin-top: {SCROLL_MARGIN_TOP}px;"
 			>
-				<Post {post} onCommentsHoverChange={(v) => (isOverComments = v)} />
+				<Post {post} on:commentsHoverChange={(event) => (isOverComments = event.detail)} />
 			</div>
 			{#each olderPosts as p, i}
 				<div
@@ -160,7 +160,7 @@
 					data-postid={p._id}
 					style="scroll-margin-top: {SCROLL_MARGIN_TOP}px;"
 				>
-					<Post post={p} onCommentsHoverChange={(v) => (isOverComments = v)} />
+					<Post post={p} on:commentsHoverChange={(event) => (isOverComments = event.detail)} />
 				</div>
 			{/each}
 			<div bind:this={sentinel} style="height: 1px;"></div>

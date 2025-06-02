@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { navigating } from '$app/stores';
 	import { spring } from 'svelte/motion';
-	import { storyViews } from '$lib/store.js';
+	import { storyViews } from '$lib/store';
 
 	import type { IUser } from '$lib/server/models/User';
 

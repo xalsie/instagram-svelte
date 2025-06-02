@@ -1,10 +1,9 @@
 import type { Handle } from '@sveltejs/kit';
 import jwt from 'jsonwebtoken';
-import type { JwtPayload } from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'devsecret';
 
-function isJwtPayload(obj: unknown): obj is JwtPayload {
+function isJwtPayload(obj: any): obj is { id?: string; _id?: string } {
 	return typeof obj === 'object' && obj !== null && ('id' in obj || '_id' in obj);
 }
 

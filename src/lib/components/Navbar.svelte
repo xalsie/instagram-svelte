@@ -1,15 +1,23 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { user, isAuthenticated, token } from '$lib/store.js';
+	import { user, isAuthenticated, token } from '$lib/store';
 	import DropDown from '$lib/components/DropDown.svelte';
 	import Notification from '$lib/components/Notification.svelte';
 
 	let notificationMessage = '';
 
 	function handleLogout() {
-		user.set(null);
+		user.set({
+			_id: '',
+			username: '',
+			email: '',
+			followers: [],
+			following: [],
+			src: '',
+			role: ''
+		});
 		isAuthenticated.set(false);
-		token.set(null);
+		token.set('');
 		window.location.href = '/login';
 	}
 
