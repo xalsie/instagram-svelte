@@ -1,53 +1,43 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
+	import DropDown from '$lib/components/DropDown.svelte';
 
-	// import 
+	import type { IPost } from '$lib/server/models/Post';
 
-	// interface IUserCard {
-	// 	username: string;
-	// 	displayname?: string;
-	// 	src?: string;
-	// }
-	// interface IImageCard {
-	// 	url: string;
-	// }
-	// interface IPostCard {
-	// 	_id: string;
-	// 	user: IUserCard;
-	// 	images: IImageCard[];
-	// 	text?: string;
-	// 	likes?: unknown[];
-	// 	comments?: unknown[];
-	// 	createdAt?: string;
-	// }
-
-	export let post: IPostCard;
-	export let index: number = 0;
-
-	let showDropdown = false;
-
-	function handleAvatarClick() {
-		showDropdown = !showDropdown;
-	}
-
-	function handleClickOutside(event: MouseEvent) {
-		const target = event.target;
-		if (!(target instanceof Element) || !target.closest('.avatar-dropdown')) {
-			showDropdown = false;
-		}
-	}
-
-	onMount(() => {
-		window.addEventListener('click', handleClickOutside);
-	});
-	onDestroy(() => {
-		window.removeEventListener('click', handleClickOutside);
-	});
+	export let post: IPost;
+	export let currentUserId: string = '';
 
 	$: postImageUrl = post?.images?.[0]?.url || '/default-image.png';
 	$: src = post?.user?.src || '/default-avatar.png';
 	$: username = post?.user?.username || 'Unknown';
 	$: createdAt = post?.createdAt ? new Date(post.createdAt) : null;
+	$: isLiked = post.likes && currentUserId
+		? post.likes.some((like) => {
+			let userId = '';
+			if (like.user && typeof like.user === 'object' && '_id' in like.user && like.user._id) {
+				userId = like.user._id.toString();
+			} else if (typeof like.user === 'string') {
+				userId = like.user;
+			}
+			return userId === currentUserId;
+		})
+		: false;
+	
+	const items = [
+		{
+			label: 'Signaler',
+			action: () => console.log('Signaler', post._id)
+		},
+		{
+			label: 'Supprimer',
+			action: () => {
+				if (currentUserId === post.user._id?.toString?.()) {
+					console.log('Supprimer', post._id);
+				} else {
+					console.warn('Vous ne pouvez pas supprimer ce post car vous n\'êtes pas l\'auteur.');
+				}
+			}
+		}
+	];
 </script>
 
 <div class="rounded-xl bg-white transition-all hover:shadow-md">
@@ -72,7 +62,9 @@
 						/>
 					</div>
 					<div class="ml-2.5">
-						<p class="text-sm font-medium">{username}</p>
+						<a href={`/profile/${post.user.username}`} class="text-sm font-semibold text-gray-800 hover:underline">
+							{post.user.displayname || username}
+						</a>
 						<div class="relative group flex">
 							<span class="text-gray-500 cursor-pointer text-sm">
 								{createdAt ? createdAt.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Date inconnue'}
@@ -89,7 +81,7 @@
 			<div class="flex items-center justify-between gap-3">
 				<div class="flex items-center">
 					<div class="cursor-pointer transition-all hover:scale-90 active:scale-75 con-like">
-						<input class="like" type="checkbox" title="like" />
+						<input class="like" type="checkbox" title="like" checked={isLiked} />
 						<div class="checkmark">
 							<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 512 512" class="cursor-pointer transition-all" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
 								<path
@@ -135,8 +127,8 @@
 					</a>
 				</div>
 
-				<div class="relative avatar-dropdown">
-					<button type="button" aria-label="icon-plus" on:click={handleAvatarClick} class="flex items-center justify-center">
+				<DropDown {items}>
+					<div slot="icon">
 						<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 24 24" class="cursor-pointer transition-all hover:opacity-50 active:scale-75" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
 							<path
 								d="M6 12H18M12 6V18"
@@ -146,18 +138,12 @@
 								stroke-linejoin="round"
 							/>
 						</svg>
-					</button>
-					{#if showDropdown}
-						<div class="absolute right-0 mt-2 w-40 bg-white rounded shadow-lg z-50 dropdown-anim" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
-							<div class="py-1" role="none">
-								<button type="button" class="block w-full text-left px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-0">Account settings</button>
-								<button type="button" class="block w-full text-left px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-1">Support</button>
-								<button type="button" class="block w-full text-left px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-2">License</button>
-								<button type="button" class="block w-full px-4 py-2 text-left text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-3">Sign out</button>
-							</div>
-						</div>
-					{/if}
-				</div>
+					</div>
+
+					<div slot="item" let:item aria-hidden="true" on:click={() => item.action()}>
+						{item.label}
+					</div>
+				</DropDown>
 			</div>
 		</div>
 	</div>
@@ -165,10 +151,10 @@
 
 <style>
 	.con-like {
-		--red: rgb(50, 50, 50);
+		--red: rgb(255, 50, 50);
 		position: relative;
-		height: 1em;
 		width: 1em;
+		height: 1em;
 	}
 
 	.con-like .like {
@@ -189,7 +175,11 @@
 	}
 
 	.con-like .filled {
-		--red: rgb(255, 50, 50);
+		fill: var(--red);
+		position: absolute;
+	}
+
+	.con-like .filled {
 		animation: kfr-filled 0.5s;
 		display: none;
 	}
@@ -202,16 +192,16 @@
 	}
 
 	.con-like .poly {
-		stroke: rgb(255, 50, 50);
-		fill: rgb(255, 50, 50);
+		stroke: var(--red);
+		fill: var(--red);
 	}
 
 	.con-like .like:checked ~ .checkmark .filled {
-		display: block
+		display: block;
 	}
 
 	.con-like .like:checked ~ .checkmark .celebrate {
-		display: block
+		display: block;
 	}
 
 	@keyframes kfr-filled {
@@ -239,21 +229,6 @@
 			transform: scale(1.2);
 			opacity: 0;
 			display: none;
-		}
-	}
-
-	.dropdown-anim {
-		animation: dropdown-fade-in 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-		transform-origin: top;
-	}
-	@keyframes dropdown-fade-in {
-		0% {
-			opacity: 0;
-			transform: translateY(-20px) scaleY(0.95);
-		}
-		100% {
-			opacity: 1;
-			transform: translateY(0) scaleY(1);
 		}
 	}
 </style>

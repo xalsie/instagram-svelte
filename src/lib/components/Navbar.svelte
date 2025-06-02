@@ -1,14 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { user, isAuthenticated, token } from '$lib/store.js';
+	import DropDown from '$lib/components/DropDown.svelte';
 	import Notification from '$lib/components/Notification.svelte';
 
 	let notificationMessage = '';
-	let showDropdown = false;
-
-	function handleAvatarClick() {
-		showDropdown = !showDropdown;
-	}
 
 	function handleLogout() {
 		user.set(null);
@@ -25,12 +21,30 @@
 		window.location.href = '/notification';
 	}
 
-	function handleClickOutside(event: MouseEvent) {
-		const target = event.target;
-		if (!(target instanceof Element) || !target.closest('.avatar-dropdown')) {
-			showDropdown = false;
+	const items = [
+		{
+			label: 'Account settings',
+			action: () => {
+				console.log('Action 1');
+			}
+		},
+		{
+			label: 'Support',
+			action: () => {
+				console.log('Action 2');
+			}
+		},
+		{
+			label: 'License',
+			action: () => {
+				console.log('Action 3');
+			}
+		},
+		{
+			label: 'Sign out',
+			action: handleLogout
 		}
-	}
+	];
 
 	onMount(() => {
 		console.log('Navbar mounted', $isAuthenticated, $user?.username);
@@ -39,10 +53,9 @@
 			notificationMessage = 'Nouveau Poste';
 			console.log('Notification: ', notificationMessage);
 		}, 5000);
-		if (typeof window !== 'undefined') {
-			window.addEventListener('click', handleClickOutside);
-		}
 	});
+
+	
 </script>
 
 <header class="sticky top-0 z-20 bg-white">
@@ -150,14 +163,13 @@
 				></path>
 			</svg>
 			{#if $isAuthenticated}
-				<div class="avatar-dropdown relative">
-					<div class="flex h-7 w-7 items-center justify-center rounded-full">
+				<DropDown {items}>
+					<div slot="icon">
+						<div class="flex h-7 w-7 items-center justify-center rounded-full">
 						<button
 							type="button"
-							on:click={handleAvatarClick}
 							class="flex items-center justify-center"
 						>
-							<!-- src="https://cdn.discordapp.com/avatars/306487572740177920/ce3920162ef416ae4e22764b1f737e8c.webp?size=160" -->
 							<img
 								src={$user?.src || '/images/profiles/default-avatar.webp'}
 								alt="avatar-{$user?.username || 'default'}"
@@ -165,48 +177,12 @@
 							/>
 						</button>
 					</div>
-					{#if showDropdown}
-						<div
-							class="dropdown-anim absolute right-0 z-50 mt-2 w-40 rounded bg-white shadow-lg"
-							role="menu"
-							aria-orientation="vertical"
-							aria-labelledby="menu-button"
-							tabindex="-1"
-						>
-							<div class="py-1" role="none">
-								<button
-									type="button"
-									class="block w-full px-4 py-2 text-left text-sm text-gray-700"
-									role="menuitem"
-									tabindex="-1"
-									id="menu-item-0">Account settings</button
-								>
-								<button
-									type="button"
-									class="block w-full px-4 py-2 text-left text-sm text-gray-700"
-									role="menuitem"
-									tabindex="-1"
-									id="menu-item-1">Support</button
-								>
-								<button
-									type="button"
-									class="block w-full px-4 py-2 text-left text-sm text-gray-700"
-									role="menuitem"
-									tabindex="-1"
-									id="menu-item-2">License</button
-								>
-								<button
-									type="button"
-									on:click={handleLogout}
-									class="block w-full px-4 py-2 text-left text-sm text-gray-700"
-									role="menuitem"
-									tabindex="-1"
-									id="menu-item-3">Sign out</button
-								>
-							</div>
-						</div>
-					{/if}
-				</div>
+					</div>
+
+					<div slot="item" let:item aria-hidden="true" on:click={() => item.action()}>
+						{item.label}
+					</div>
+				</DropDown>
 			{:else}
 				<a
 					href="/login"
@@ -220,20 +196,3 @@
 		<Notification message={notificationMessage} />
 	</div>
 </header>
-
-<style>
-	.dropdown-anim {
-		animation: dropdown-fade-in 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-		transform-origin: top;
-	}
-	@keyframes dropdown-fade-in {
-		0% {
-			opacity: 0;
-			transform: translateY(-20px) scaleY(0.95);
-		}
-		100% {
-			opacity: 1;
-			transform: translateY(0) scaleY(1);
-		}
-	}
-</style>
