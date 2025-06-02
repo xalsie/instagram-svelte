@@ -1,0 +1,42 @@
+name: main CI
+
+on:
+  push:
+    branches: [ "CI/develop" ]
+  pull_request:
+    branches: [ "CI/develop" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x, 24.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        # cache bun dependencies
+        cache: 'npm'
+    - run: npm i bun -g > bun-install.log 2>&1
+    - run: bun i > bun-i.log 2>&1
+    - run: bun format --if-present > bun-format.log 2>&1
+    - run: bun lint --if-present > bun-lint.log 2>&1
+    - run: bun test --if-present > bun-test.log 2>&1
+    - run: bun check --if-present > bun-check.log 2>&1
+    - run: bun build --if-present > bun-build.log 2>&1
+    - name: Upload logs as artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: bun-logs
+        path: |
+          *.log
+          **/test-results*.xml
+
