@@ -1,4 +1,6 @@
-name: main CI
+
+
+name: Develop CI
 
 on:
   push:
@@ -22,20 +24,18 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
-        # cache bun dependencies
         cache: 'npm'
-    - run: npm i bun -g > bun-install.log 2>&1
-    - run: bun i > bun-i.log 2>&1
-    - run: bun format --if-present > bun-format.log 2>&1
-    - run: bun lint --if-present > bun-lint.log 2>&1
-    - run: bun test --if-present > bun-test.log 2>&1
-    - run: bun check --if-present > bun-check.log 2>&1
-    - run: bun build --if-present > bun-build.log 2>&1
+    - run: npm i
+    - run: npm run format --if-present > run-format.log 2>&1
+    - run: npm run lint --if-present > run-lint.log 2>&1
+    - run: npm run test --if-present > run-test.log 2>&1
+    - run: npm run check --if-present > run-check.log 2>&1
+    - run: npm run build --if-present > run-build.log 2>&1
     - name: Upload logs as artifacts
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: bun-logs
+        name: run-logs
         path: |
           *.log
           **/test-results*.xml
