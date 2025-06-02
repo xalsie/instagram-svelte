@@ -1,42 +1,44 @@
-
-
 name: Develop CI
 
 on:
   push:
-    branches: [ "CI/develop" ]
+    branches: ['CI/develop']
   pull_request:
-    branches: [ "CI/develop" ]
+    branches: ['CI/develop']
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x, 22.x, 24.x]
+        node-version: [24.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - run: npm ci
-    - run: npm run format --if-present > run-format.log 2>&1
-    - run: npm run lint --if-present > run-lint.log 2>&1
-    - run: npm run test --if-present > run-test.log 2>&1
-    - run: npm run check --if-present > run-check.log 2>&1
-    - run: npm run build --if-present > run-build.log 2>&1
-    - name: Upload logs as artifacts
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: run-logs
-        path: |
-          *.log
-          **/test-results*.xml
-
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Format code
+        run: npm run format --if-present
+      - name: Lint code
+        run: npm run lint --if-present
+      - name: Run tests
+        run: npm run test --if-present
+      - name: Type check
+        run: npm run check --if-present
+      - name: Build project
+        run: npm run build --if-present
+      - name: Upload logs as artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: run-logs
+          path: |
+            *.log
+            **/test-results*.xml
