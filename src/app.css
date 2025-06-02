@@ -1,65 +1,65 @@
 @import 'tailwindcss';
 
 .pb-full {
-  padding-bottom: 100%;
+	padding-bottom: 100%;
 }
 
-.bioclass{
-  color: #8E8E8E;
+.bioclass {
+	color: #8e8e8e;
 }
 
 /* hide search icon on search focus */
-.search-bar:focus + .fa-search{
-  display: none;
+.search-bar:focus + .fa-search {
+	display: none;
 }
 
 @media screen and (min-width: 768px) {
-  .post:hover .overlay {
-    display: block;
-  }
+	.post:hover .overlay {
+		display: block;
+	}
 }
 
 /* Animate Icon */
 @layer components {
-  .btn {
-    @apply h-7  hover:scale-125 transition-transform duration-200 ease-out cursor-pointer;
-  }
+	.btn {
+		@apply h-7 cursor-pointer transition-transform duration-200 ease-out hover:scale-125;
+	}
 }
 
 /* Hide scrollbar */
 @layer utilities {
-    /* Hide scrollbar for Chrome, Safari and Opera */
-    .no-scrollbar::-webkit-scrollbar {
-      display: none;
-    }
+	/* Hide scrollbar for Chrome, Safari and Opera */
+	.no-scrollbar::-webkit-scrollbar {
+		display: none;
+	}
 
-    /* Hide scrollbar for IE, Edge and Firefox */
-    .no-scrollbar {
-      -ms-overflow-style: none;  /* IE and Edge */
-      scrollbar-width: none;  /* Firefox */
-  }
+	/* Hide scrollbar for IE, Edge and Firefox */
+	.no-scrollbar {
+		-ms-overflow-style: none; /* IE and Edge */
+		scrollbar-width: none; /* Firefox */
+	}
 }
 
 /* Story animation */
 :root {
-  --color-bg: black;
-  --color-red: #ff302b;
-  --font-weight-body: 400;
-  --site-padding: 2rem;
+	--color-bg: black;
+	--color-red: #ff302b;
+	--font-weight-body: 400;
+	--site-padding: 2rem;
 }
 
 #svelte,
 .transition {
-  display: grid;
-  grid-template-rows: 1fr;
-  grid-template-columns: 1fr;
-  height: 100%;
+	display: grid;
+	grid-template-rows: 1fr;
+	grid-template-columns: 1fr;
+	height: 100%;
 }
 
 #svelte > *,
 .transition > * {
-  grid-row: 1;
-  grid-column: 1;
-  min-width: 0;
-  min-height: 0;
+	grid-row: 1;
+	grid-column: 1;
+	min-width: 0;
+	min-height: 0;
 }

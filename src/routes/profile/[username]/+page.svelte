@@ -65,37 +65,34 @@
 					<div class="flex h-96 items-center justify-center text-red-500">{error}</div>
 				{:else if user}
 					<div class="ml-2 flex w-full flex-col gap-8 p-4 md:flex-row">
-
 						<!-- Colonne gauche : Détail du profil -->
 						<div class="w-full md:w-1/4">
 							<header class="flex flex-col p-4 md:p-0">
 								<img
-									class="mb-4 h-32 w-32 rounded-full border-2 border-pink-600 object-cover mx-auto md:h-40 md:w-40"
+									class="mx-auto mb-4 h-32 w-32 rounded-full border-2 border-pink-600 object-cover md:h-40 md:w-40"
 									src={user?.src || '/images/profiles/default-avatar.webp'}
 									alt="profile"
 								/>
 								<div class="mt-3 mb-2 flex justify-center gap-4">
 									<div class="flex flex-col items-center">
 										<span class="font-bold">{user?.posts?.length ?? 0}</span>
-										<span class="text-gray-400 text-xs"
-											>posts</span>
+										<span class="text-xs text-gray-400">posts</span>
 									</div>
 									<div class="flex flex-col items-center">
 										<span class="font-bold">{user?.followers?.length ?? 0}</span>
-										<span class="text-gray-400 text-xs"
-											>followers</span>
+										<span class="text-xs text-gray-400">followers</span>
 									</div>
 									<div class="flex flex-col items-center">
 										<span class="font-bold">{user?.following?.length ?? 0}</span>
-										<span class="text-gray-400 text-xs"
-											>following</span>
+										<span class="text-xs text-gray-400">following</span>
 									</div>
 								</div>
 								{#if !user?.isMe}
 									<button
 										on:click={toggleFollow}
-										class="mb-12 mt-2 block rounded bg-blue-500 px-4 py-2 text-center text-sm font-semibold text-white"
-									>{user?.isFollowed ? 'Unfollow' : 'Follow'}</button>
+										class="mt-2 mb-12 block rounded bg-blue-500 px-4 py-2 text-center text-sm font-semibold text-white"
+										>{user?.isFollowed ? 'Unfollow' : 'Follow'}</button
+									>
 								{/if}
 								{#if user?.displayname}
 									<h1 class="font-semibold">{user.displayname}</h1>
@@ -112,7 +109,7 @@
 						</div>
 
 						<!-- Colonne droite : Posts de l'utilisateur -->
-						<div class="w-full md:w-/4">
+						<div class="md:w-/4 w-full">
 							<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
 								{#if posts.length === 0}
 									<p class="col-span-full text-center text-gray-400">No posts yet.</p>

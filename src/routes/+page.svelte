@@ -9,7 +9,7 @@
 		<div>
 			<Navbar />
 
-			<main class="md:max-w-9/10 xl:max-w-3/4 mx-auto w-full px-2 py-2 md:px-4 md:py-6">
+			<main class="mx-auto w-full px-2 py-2 md:max-w-9/10 md:px-4 md:py-6 xl:max-w-3/4">
 				<div class="grid grid-cols-12">
 					<div class="col-span-12">
 						<Stories />

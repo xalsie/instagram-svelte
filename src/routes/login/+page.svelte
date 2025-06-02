@@ -32,10 +32,26 @@
 			<p class="error">{errorMessage}</p>
 		{/if}
 
-		<input type="text" bind:value={username} class="mb-2 w-full rounded border p-2" placeholder="Nom d'utilisateur" required />
-		<input type="password" bind:value={password} class="mb-2 w-full rounded border p-2" placeholder="Password" required />
+		<input
+			type="text"
+			bind:value={username}
+			class="mb-2 w-full rounded border p-2"
+			placeholder="Nom d'utilisateur"
+			required
+		/>
+		<input
+			type="password"
+			bind:value={password}
+			class="mb-2 w-full rounded border p-2"
+			placeholder="Password"
+			required
+		/>
 
-		<button type="button" on:click={handleLogin} class="w-full rounded bg-blue-500 p-2 text-white hover:bg-blue-600">Se connecter</button>
+		<button
+			type="button"
+			on:click={handleLogin}
+			class="w-full rounded bg-blue-500 p-2 text-white hover:bg-blue-600">Se connecter</button
+		>
 
 		<div class="mt-2 text-sm">
 			Vous n'avez pas de compte ? <a href="/register" class="text-blue-600 underline">S'inscrire</a>

@@ -91,8 +91,8 @@
 	async function handleLike() {
 		if (!$user) return;
 		const userId = ($user as IUser)._id || $user.username;
-        console.log('likes', $likes)
-		let existingLike = $likes.find((like: ILike) => like.user._id === userId)
+		console.log('likes', $likes);
+		let existingLike = $likes.find((like: ILike) => like.user._id === userId);
 		let alreadyLiked = !!existingLike;
 		let likeId = existingLike?._id;
 

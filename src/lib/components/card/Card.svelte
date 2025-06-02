@@ -10,18 +10,19 @@
 	$: src = post?.user?.src || '/default-avatar.png';
 	$: username = post?.user?.username || 'Unknown';
 	$: createdAt = post?.createdAt ? new Date(post.createdAt) : null;
-	$: isLiked = post.likes && currentUserId
-		? post.likes.some((like) => {
-			let userId = '';
-			if (like.user && typeof like.user === 'object' && '_id' in like.user && like.user._id) {
-				userId = like.user._id.toString();
-			} else if (typeof like.user === 'string') {
-				userId = like.user;
-			}
-			return userId === currentUserId;
-		})
-		: false;
-	
+	$: isLiked =
+		post.likes && currentUserId
+			? post.likes.some((like) => {
+					let userId = '';
+					if (like.user && typeof like.user === 'object' && '_id' in like.user && like.user._id) {
+						userId = like.user._id.toString();
+					} else if (typeof like.user === 'string') {
+						userId = like.user;
+					}
+					return userId === currentUserId;
+				})
+			: false;
+
 	const items = [
 		{
 			label: 'Signaler',
@@ -33,7 +34,7 @@
 				if (currentUserId === post.user._id?.toString?.()) {
 					console.log('Supprimer', post._id);
 				} else {
-					console.warn('Vous ne pouvez pas supprimer ce post car vous n\'êtes pas l\'auteur.');
+					console.warn("Vous ne pouvez pas supprimer ce post car vous n'êtes pas l'auteur.");
 				}
 			}
 		}
@@ -46,7 +47,7 @@
 			<img
 				src={postImageUrl}
 				alt=""
-				class="h-full min-h-[220px] max-h-[220px] w-full rounded-t-xl object-cover"
+				class="h-full max-h-[220px] min-h-[220px] w-full rounded-t-xl object-cover"
 			/>
 		</div>
 	</a>
@@ -55,23 +56,37 @@
 			<div class="flex items-center space-x-4">
 				<div class="flex items-center">
 					<div class="h-10 w-10 rounded-full bg-neutral-200">
-						<img
-							src={src}
-							alt="avatar"
-							class="rounded-full"
-						/>
+						<img {src} alt="avatar" class="rounded-full" />
 					</div>
 					<div class="ml-2.5">
-						<a href={`/profile/${post.user.username}`} class="text-sm font-semibold text-gray-800 hover:underline">
+						<a
+							href={`/profile/${post.user.username}`}
+							class="text-sm font-semibold text-gray-800 hover:underline"
+						>
 							{post.user.displayname || username}
 						</a>
-						<div class="relative group flex">
-							<span class="text-gray-500 cursor-pointer text-sm">
-								{createdAt ? createdAt.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Date inconnue'}
+						<div class="group relative flex">
+							<span class="cursor-pointer text-sm text-gray-500">
+								{createdAt
+									? createdAt.toLocaleDateString('fr-FR', {
+											day: 'numeric',
+											month: 'long',
+											year: 'numeric'
+										})
+									: 'Date inconnue'}
 							</span>
 							{#if createdAt}
-								<div class="absolute left-1/2 top-full z-10 hidden min-w-max -translate-x-1/2 whitespace-nowrap rounded bg-white p-2 text-xs text-black shadow-md group-hover:block">
-									{createdAt.toLocaleString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+								<div
+									class="absolute top-full left-1/2 z-10 hidden min-w-max -translate-x-1/2 rounded bg-white p-2 text-xs whitespace-nowrap text-black shadow-md group-hover:block"
+								>
+									{createdAt.toLocaleString('fr-FR', {
+										day: 'numeric',
+										month: 'long',
+										year: 'numeric',
+										hour: '2-digit',
+										minute: '2-digit',
+										second: '2-digit'
+									})}
 								</div>
 							{/if}
 						</div>
@@ -80,10 +95,19 @@
 			</div>
 			<div class="flex items-center justify-between gap-3">
 				<div class="flex items-center">
-					<div class="cursor-pointer transition-all hover:scale-90 active:scale-75 con-like">
+					<div class="con-like cursor-pointer transition-all hover:scale-90 active:scale-75">
 						<input class="like" type="checkbox" title="like" checked={isLiked} />
 						<div class="checkmark">
-							<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 512 512" class="cursor-pointer transition-all" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+							<svg
+								stroke="currentColor"
+								fill="currentColor"
+								stroke-width="0"
+								viewBox="0 0 512 512"
+								class="cursor-pointer transition-all"
+								height="1em"
+								width="1em"
+								xmlns="http://www.w3.org/2000/svg"
+							>
 								<path
 									fill="none"
 									stroke-linecap="round"
@@ -92,8 +116,16 @@
 									d="M352.92 80C288 80 256 144 256 144s-32-64-96.92-64c-52.76 0-94.54 44.14-95.08 96.81-1.1 109.33 86.73 187.08 183 252.42a16 16 0 0018 0c96.26-65.34 184.09-143.09 183-252.42-.54-52.67-42.32-96.81-95.08-96.81z"
 								></path>
 							</svg>
-							<svg xmlns="http://www.w3.org/2000/svg" class="filled" viewBox="0 0 24 24" height=".9em" width=".9em">
-								<path d="M17.5,1.917a6.4,6.4,0,0,0-5.5,3.3,6.4,6.4,0,0,0-5.5-3.3A6.8,6.8,0,0,0,0,8.967c0,4.547,4.786,9.513,8.8,12.88a4.974,4.974,0,0,0,6.4,0C19.214,18.48,24,13.514,24,8.967A6.8,6.8,0,0,0,17.5,1.917Z"></path>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								class="filled"
+								viewBox="0 0 24 24"
+								height=".9em"
+								width=".9em"
+							>
+								<path
+									d="M17.5,1.917a6.4,6.4,0,0,0-5.5,3.3,6.4,6.4,0,0,0-5.5-3.3A6.8,6.8,0,0,0,0,8.967c0,4.547,4.786,9.513,8.8,12.88a4.974,4.974,0,0,0,6.4,0C19.214,18.48,24,13.514,24,8.967A6.8,6.8,0,0,0,17.5,1.917Z"
+								></path>
 							</svg>
 							<svg xmlns="http://www.w3.org/2000/svg" height="100" width="100" class="celebrate">
 								<polygon class="poly" points="10,10 20,20"></polygon>
@@ -111,8 +143,17 @@
 				</div>
 
 				<div class="flex items-center">
-					<a href={`/post/${post._id}`} class="cursor-pointer flex items-center">
-						<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 512 512" class="transition-all hover:opacity-50 active:scale-75" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+					<a href={`/post/${post._id}`} class="flex cursor-pointer items-center">
+						<svg
+							stroke="currentColor"
+							fill="currentColor"
+							stroke-width="0"
+							viewBox="0 0 512 512"
+							class="transition-all hover:opacity-50 active:scale-75"
+							height="1em"
+							width="1em"
+							xmlns="http://www.w3.org/2000/svg"
+						>
 							<path
 								fill="none"
 								stroke-linecap="round"
@@ -129,7 +170,16 @@
 
 				<DropDown {items}>
 					<div slot="icon">
-						<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 24 24" class="cursor-pointer transition-all hover:opacity-50 active:scale-75" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+						<svg
+							stroke="currentColor"
+							fill="currentColor"
+							stroke-width="0"
+							viewBox="0 0 24 24"
+							class="cursor-pointer transition-all hover:opacity-50 active:scale-75"
+							height="1em"
+							width="1em"
+							xmlns="http://www.w3.org/2000/svg"
+						>
 							<path
 								d="M6 12H18M12 6V18"
 								stroke="#000000"

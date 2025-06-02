@@ -12,7 +12,8 @@
 	let images: any[];
 	let username: string;
 	let src: string;
-	let prevUser: any = null, nextUser: any = null;
+	let prevUser: any = null,
+		nextUser: any = null;
 
 	$: user = $page.data.user;
 	$: users = ($page.data.users || [$page.data.user]).filter((u: any) => u && u.username);
@@ -61,7 +62,7 @@
 				const now = Date.now();
 				let allSeen = false;
 				let firstNotSeenIdx = 0;
-				if (entry && (now - entry.timestamp < 24 * 60 * 60 * 1000)) {
+				if (entry && now - entry.timestamp < 24 * 60 * 60 * 1000) {
 					const seen = Array.isArray(entry.imagesSeen) ? entry.imagesSeen : [];
 					if (next.images?.length) {
 						allSeen = seen.length >= next.images.length;
@@ -160,7 +161,7 @@
 		if (autoPlay) {
 			progress = 0;
 			let lastImageSize = 0;
-			let autoPlayDelay: number =  images?.[imgIndex]?.delay || 4000;
+			let autoPlayDelay: number = images?.[imgIndex]?.delay || 4000;
 			const step = 100 / (autoPlayDelay / 10);
 			progressInterval = setInterval(() => {
 				if (imageElement && imageElement.clientWidth !== lastImageSize) {
@@ -238,12 +239,12 @@
 		aria-hidden="true"
 		style="transform: translateX({$panTween}px); opacity: {$scaleTween};"
 	>
-		<div class="absolute right-4 top-4 z-20">
+		<div class="absolute top-4 right-4 z-20">
 			<a class="p-4 font-bold text-gray-900" aria-label="Close story" href="/">✕</a>
 		</div>
 
 		<!-- Liste utilisateurs -->
-		<div class="z-30 mb-6 mt-4 flex items-center justify-center gap-3">
+		<div class="z-30 mt-4 mb-6 flex items-center justify-center gap-3">
 			{#each users as u}
 				<button
 					type="button"
@@ -273,7 +274,7 @@
 		<div class="relative flex h-[60vh] w-full items-center justify-center md:h-[70vh] lg:h-[80vh]">
 			{#if imageWidth !== 0}
 				<div
-					class="absolute left-1/2 top-5 z-20 flex items-center"
+					class="absolute top-5 left-1/2 z-20 flex items-center"
 					style="transform: translateX(-50%); max-width: 900px; width: auto;"
 				>
 					{#each images as img, i}
@@ -290,40 +291,44 @@
 				</div>
 			{/if}
 			<!-- Images précédentes et suivantes (blur) -->
-			{#if prevUser && prevUser.images.length > 0} <!-- Previous User -->
+			{#if prevUser && prevUser.images.length > 0}
+				<!-- Previous User -->
 				<img
 					src={prevUser.images[prevUser.images.length - 1].url}
 					alt={prevUser.images[prevUser.images.length - 1].alt}
-					class="hidden md:block -left-25 md:-left-100 scale-40 absolute top-1/2 z-0 h-5/6 w-1/2 -translate-y-1/2 object-contain opacity-60 blur-md transition-all duration-500"
+					class="absolute top-1/2 -left-25 z-0 hidden h-5/6 w-1/2 -translate-y-1/2 scale-40 object-contain opacity-60 blur-md transition-all duration-500 md:-left-100 md:block"
 				/>
 			{/if}
-			{#if images && images.length > 0} <!-- Previous User Images -->
+			{#if images && images.length > 0}
+				<!-- Previous User Images -->
 				{#each images.slice(Math.max(0, imgIndex - 3), imgIndex).reverse() as img, i}
 					<img
 						src={img.url}
 						alt={img.alt}
-						class="scale-65 absolute left-0 top-1/2 z-0 h-full max-h-[80vh] w-auto -translate-y-1/2 -translate-x-1/2 md:translate-x-1/2 rounded-xl object-contain opacity-40 shadow-2xl blur-md transition-all duration-500"
+						class="absolute top-1/2 left-0 z-0 h-full max-h-[80vh] w-auto -translate-x-1/2 -translate-y-1/2 scale-65 rounded-xl object-contain opacity-40 shadow-2xl blur-md transition-all duration-500 md:translate-x-1/2"
 						style="max-width: 900px; z-index: {5 - i};"
 					/>
 				{/each}
 			{/if}
-			{#if images && images.length > 0} <!-- Next User Images -->
+			{#if images && images.length > 0}
+				<!-- Next User Images -->
 				{#each images.slice(imgIndex + 1, imgIndex + 4) as img, i}
 					<img
 						src={img.url}
 						alt={img.alt}
-						class="scale-65 absolute right-0 top-1/2 z-0 h-full max-h-[80vh] w-auto translate-x-10 md:-translate-x-1/2 -translate-y-1/2 rounded-xl object-contain opacity-400 shadow-2xl blur-md transition-all duration-500"
+						class="absolute top-1/2 right-0 z-0 h-full max-h-[80vh] w-auto translate-x-10 -translate-y-1/2 scale-65 rounded-xl object-contain opacity-400 shadow-2xl blur-md transition-all duration-500 md:-translate-x-1/2"
 						style="max-width: 900px; z-index: {5 - i};"
 					/>
 				{/each}
 			{/if}
 
-			{#key imgPath} <!-- Image Center -->
+			{#key imgPath}
+				<!-- Image Center -->
 				<img
 					src={imgPath}
 					alt={images?.[imgIndex]?.alt || ''}
 					bind:this={imageElement}
-					class="mask-t-from-90% mask-t-to-110% relative z-10 mx-auto h-full max-h-[80vh] w-auto scale-100 rounded-xl object-contain shadow-2xl transition-transform duration-500"
+					class="relative z-10 mx-auto h-full max-h-[80vh] w-auto scale-100 rounded-xl mask-t-from-90% mask-t-to-110% object-contain shadow-2xl transition-transform duration-500"
 					style="transform: scale({$scaleTween}); max-width: 900px;"
 				/>
 			{/key}
@@ -331,7 +336,7 @@
 				<img
 					src={nextUser.images[0].url}
 					alt={nextUser.images[0].alt}
-					class="hidden md:block -right-25 md:-right-100 scale-40 absolute top-1/2 z-0 h-5/6 w-1/2 -translate-y-1/2 object-contain opacity-60 blur-sm transition-all duration-500"
+					class="absolute top-1/2 -right-25 z-0 hidden h-5/6 w-1/2 -translate-y-1/2 scale-40 object-contain opacity-60 blur-sm transition-all duration-500 md:-right-100 md:block"
 				/>
 			{/if}
 		</div>
