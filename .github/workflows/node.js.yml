@@ -25,7 +25,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - run: npm i
+    - run: npm ci
     - run: npm run format --if-present > run-format.log 2>&1
     - run: npm run lint --if-present > run-lint.log 2>&1
     - run: npm run test --if-present > run-test.log 2>&1
