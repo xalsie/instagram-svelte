@@ -45,19 +45,22 @@ export class UserService {
 
     static async getProfileWithPosts(username: string) {
         await connectDB();
-        // Récupère le user + ses posts (avec images, likes, comments)
         const user = await User.findOne({ username })
             .select('-password')
+            .populate({ path: 'followers' })
+            .populate({ path: 'following' })
             .lean();
         if (!user) return null;
-        // On suppose que le modèle Post a un champ user (ObjectId)
+
         const Post = (await import('$lib/server/models/Post')).default;
         const posts = await Post.find({ user: user._id })
             .populate('images')
             .populate('likes')
             .populate('comments')
             .lean();
-        // On retourne un nouvel objet avec posts (pour éviter TS sur user.posts)
+
+        user.followers = (user.followers || []).map((f: any) => f.follower?._id || f.follower);
+        user.following = (user.following || []).map((f: any) => f.following?._id || f.following);
         return { ...user, posts };
     }
 }

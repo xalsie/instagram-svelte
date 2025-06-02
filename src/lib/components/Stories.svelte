@@ -4,7 +4,6 @@
 
 	import { isAuthenticated } from '$lib/store.js';
 
-	import type { IUser } from '$lib/server/models/User';
 	import type { IStory } from '$lib/server/models/Story';
 
 	let users: any[] = [];
@@ -17,9 +16,8 @@
 			const stories: IStory[] = await res.json();
 			users = stories.map((story) => ({
 				...story.user,
-				images: story.image,
-				storyId: story._id,
-				delay: story.delay
+				images: story.images,
+				storyId: story._id
 			}));
 		} else {
 			users = [];

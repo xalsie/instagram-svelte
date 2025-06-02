@@ -3,7 +3,6 @@
 	import { navigating } from "$app/stores";
 	import { spring } from "svelte/motion";
 	import { storyViews } from '$lib/store.js';
-	import { get } from 'svelte/store';
 
 	import type { IUser } from '$lib/server/models/User';
 
@@ -23,7 +22,7 @@
 		if (!user._id) return false;
 		const images = (user as any).images as { url: string }[] | undefined;
 		if (!images || !images.length) return false;
-		const views = get(storyViews) as Record<string, { timestamp: number; imagesSeen: number[] }>;
+		const views = $storyViews as Record<string, { timestamp: number; imagesSeen: number[] }>;
 		const userId = typeof user._id === 'string' ? user._id : user._id?.toString?.() ?? '';
 		const entry = views[userId];
 		if (!entry) return false;
@@ -45,7 +44,7 @@
 	}
 
 	function openStory() {
-		const views = get(storyViews) as Record<string, { timestamp: number; imagesSeen: number[] }>;
+		const views = $storyViews as Record<string, { timestamp: number; imagesSeen: number[] }>;
 		const userId = typeof user._id === 'string' ? user._id : user._id?.toString?.() ?? '';
 		const entry = views[userId];
 		const images = (user as any).images as { url: string }[] | undefined;

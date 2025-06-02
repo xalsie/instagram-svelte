@@ -5,6 +5,7 @@ dotenv.config();
 
 // Define the IUser interface for TypeScript
 import bcrypt from 'bcryptjs';
+import Follow from './Follow';
 
 export interface IUser extends Document {
     _id: Schema.Types.ObjectId;
@@ -29,23 +30,21 @@ const UserSchema = new Schema<IUser>({
     displayname: { type: String },
     src: { type: String, default: '/images/profiles/default-avatar.webp' },
     password: { type: String, required: true },
+    bio: { type: String }
 }, {
     timestamps: true
 });
 
-// supprimer le champ password a chaque get
 UserSchema.methods.toJSON = function () {
     const user = this.toObject();
     delete user.password;
     return user;
 };
 
-// Middleware pour hacher le mot de passe avant de créer un user
 UserSchema.pre<IUser>('save', async function (next) {
     console.log('UserSchema.pre save called');
 
     if (this.isNew && this.isModified('password')) {
-        // const bcrypt = require('bcrypt');
         const saltRounds = 10;
         try {
             const hashedPassword = await bcrypt.hash(this.password, saltRounds);
@@ -57,14 +56,30 @@ UserSchema.pre<IUser>('save', async function (next) {
     next();
 });
 
-// Middleware pour vérifier le mot de passe lors de la connexion
 UserSchema.methods.checkPassword = async function (password: string): Promise<boolean> {
-    // const bcrypt = require('bcrypt');
     try {
         return await bcrypt.compare(password, this.password);
     } catch (error) {
         throw new Error('Password comparison failed');
     }
 };
+
+UserSchema.virtual('followers', {
+    ref: 'Follow',
+    localField: '_id',
+    foreignField: 'following',
+    justOne: false,
+    options: { strictPopulate: false }
+});
+UserSchema.virtual('following', {
+    ref: 'Follow',
+    localField: '_id',
+    foreignField: 'follower',
+    justOne: false,
+    options: { strictPopulate: false }
+});
+
+UserSchema.set('toObject', { virtuals: true });
+UserSchema.set('toJSON', { virtuals: true });
 
 export default (mongoose.models.User as Model<IUser>) || mongoose.model<IUser>('User', UserSchema);
