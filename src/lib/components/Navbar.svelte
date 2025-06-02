@@ -13,13 +13,13 @@
 		window.location.href = '/login';
 	}
 
-	function goToProfile() {
-		window.location.href = '/profile';
-	}
+	// function goToProfile() {
+	// 	window.location.href = '/profile';
+	// }
 
-	function goToNotification() {
-		window.location.href = '/notification';
-	}
+	// function goToNotification() {
+	// 	window.location.href = '/notification';
+	// }
 
 	const items = [
 		{
