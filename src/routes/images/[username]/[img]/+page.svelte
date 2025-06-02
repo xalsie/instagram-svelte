@@ -6,8 +6,6 @@
 
 	import { storyViews } from '$lib/store.js';
 
-	// export let data: any;
-
 	let user: any;
 	let users: any[];
 	let imgIndex: number;
@@ -40,6 +38,12 @@
 		xDragPos = 0;
 	const scaleTween = spring(initialScale);
 	let panTween = spring(0);
+
+	let autoPlay: boolean = true;
+
+	let autoPlayTimeout: ReturnType<typeof setTimeout>;
+	let progressInterval: ReturnType<typeof setInterval>;
+	let progress = 0;
 
 	function gotoNextStory() {
 		if (typeof imgIndex === 'number' && imgIndex < images.length - 1) {
@@ -151,12 +155,6 @@
 		$panTween = 0;
 	}
 
-	let autoPlay: boolean = true;
-
-	let autoPlayTimeout: ReturnType<typeof setTimeout>;
-	let progressInterval: ReturnType<typeof setInterval>;
-	let progress = 0;
-
 	function startAutoPlay() {
 		stopAutoPlay();
 		if (autoPlay) {
@@ -200,12 +198,6 @@
 		progress = 0;
 	}
 
-	onMount(() => {
-		if (autoPlay) startAutoPlay();
-		console.log("datas", $page.data)
-		return () => stopAutoPlay();
-	});
-
 	$: {
 		const newUser = users.find((u: any) => u && u.username === $page.params.username);
 		if (newUser) {
@@ -223,6 +215,11 @@
 		stopAutoPlay();
 		if (autoPlay) startAutoPlay();
 	}
+
+	onMount(() => {
+		if (autoPlay) startAutoPlay();
+		return () => stopAutoPlay();
+	});
 
 	onDestroy(() => stopAutoPlay());
 </script>

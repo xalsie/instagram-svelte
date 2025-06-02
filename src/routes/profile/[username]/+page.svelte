@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Navbar from '$lib/components/Navbar.svelte';
+	import { user as userStore } from '$lib/store.js';
 
 	let user: any = null;
 	let posts: any[] = [];
 	let loading = true;
 	let error = '';
+	let isFollowed = false;
 
 	async function fetchProfile() {
 		loading = true;
@@ -23,8 +25,29 @@
 		}
 	}
 
-	onMount(() => {
-		fetchProfile();
+	async function toggleFollow() {
+		if (!user) return;
+		const me = $userStore;
+		if (!me || !me.username) return;
+		const method = user.isFollowed ? 'DELETE' : 'POST';
+		const res = await fetch(`/api/users/${user.username}/follow`, { method });
+		if (res.ok) {
+			user.isFollowed = !user.isFollowed;
+			if (user.isFollowed) {
+				user.followers = [...(user.followers || []), me._id];
+			} else {
+				user.followers = (user.followers || []).filter((id: string) => id !== me._id);
+			}
+		}
+	}
+
+	onMount(async () => {
+		await fetchProfile();
+		const me = $userStore;
+		if (user && me && me._id && user.followers) {
+			user.isFollowed = user.followers.includes(me._id);
+			user.isMe = user.username === me.username;
+		}
 	});
 </script>
 
@@ -42,6 +65,7 @@
 					<div class="flex h-96 items-center justify-center text-red-500">{error}</div>
 				{:else if user}
 					<div class="ml-2 flex w-full flex-col gap-8 p-4 md:flex-row">
+
 						<!-- Colonne gauche : Détail du profil -->
 						<div class="w-full md:w-1/4">
 							<header class="flex flex-col p-4 md:p-0">
@@ -50,7 +74,6 @@
 									src={user?.src || '/images/profiles/default-avatar.webp'}
 									alt="profile"
 								/>
-								<!-- <h2 class="mb-2 text-3xl font-light">{user?.username}</h2> -->
 								<div class="mt-3 mb-2 flex justify-center gap-4">
 									<div class="flex flex-col items-center">
 										<span class="font-bold">{user?.posts?.length ?? 0}</span>
@@ -69,11 +92,10 @@
 									</div>
 								</div>
 								{#if !user?.isMe}
-									<a
-										href="#"
+									<button
+										on:click={toggleFollow}
 										class="mb-12 mt-2 block rounded bg-blue-500 px-4 py-2 text-center text-sm font-semibold text-white"
-										>Follow</a
-									>
+									>{user?.isFollowed ? 'Unfollow' : 'Follow'}</button>
 								{/if}
 								{#if user?.displayname}
 									<h1 class="font-semibold">{user.displayname}</h1>
